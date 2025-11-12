@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24">
+  <defs>
+    <!-- Level 1: Motorway (Interstate) - Blue with red top -->
+    <!-- Short text version (1-2 characters) -->
+    <symbol id="road-shield-1-short" viewBox="0 0 24 24">
+      <rect x="1" y="3" width="22" height="18" rx="2" fill="#1e3a8a" stroke="#1e3a8a" stroke-width="1"/>
+      <rect x="1" y="3" width="22" height="4" rx="2" fill="#dc2626"/>
+      <path d="M1 19L7 22L7 19L1 16Z" fill="#1e3a8a"/>
+    </symbol>
+    
+    <!-- Medium text version (3 characters) -->
+    <symbol id="road-shield-1-medium" viewBox="0 0 32 24">
+      <rect x="1" y="3" width="30" height="18" rx="2" fill="#1e3a8a" stroke="#1e3a8a" stroke-width="1"/>
+      <rect x="1" y="3" width="30" height="4" rx="2" fill="#dc2626"/>
+      <path d="M1 19L7 22L7 19L1 16Z" fill="#1e3a8a"/>
+    </symbol>
+    
+    <!-- Long text version (4+ characters) -->
+    <symbol id="road-shield-1-long" viewBox="0 0 80 24">
+      <rect x="1" y="3" width="78" height="18" rx="2" fill="#1e3a8a" stroke="#1e3a8a" stroke-width="1"/>
+      <rect x="1" y="3" width="78" height="4" rx="2" fill="#dc2626"/>
+      <path d="M1 19L7 22L7 19L1 16Z" fill="#1e3a8a"/>
+    </symbol>
+
+    <!-- Level 2: Trunk (US Highway) - White with black border and triangle -->
+    <!-- Short text version -->
+    <symbol id="road-shield-2-short" viewBox="0 0 24 24">
+      <rect x="1.5" y="3.5" width="21" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+    
+    <!-- Medium text version -->
+    <symbol id="road-shield-2-medium" viewBox="0 0 32 24">
+      <rect x="1.5" y="3.5" width="29" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+    
+    <!-- Long text version -->
+    <symbol id="road-shield-2-long" viewBox="0 0 80 24">
+      <rect x="1.5" y="3.5" width="77" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+
+    <!-- Level 3: Primary (State Highway) - White with black border and triangle -->
+    <!-- Short text version -->
+    <symbol id="road-shield-3-short" viewBox="0 0 24 24">
+      <rect x="1.5" y="3.5" width="21" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+    
+    <!-- Medium text version -->
+    <symbol id="road-shield-3-medium" viewBox="0 0 32 24">
+      <rect x="1.5" y="3.5" width="29" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+    
+    <!-- Long text version -->
+    <symbol id="road-shield-3-long" viewBox="0 0 80 24">
+      <rect x="1.5" y="3.5" width="77" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+
+    <!-- Level 4: Secondary (County Road) - White with black border and triangle -->
+    <!-- Short text version -->
+    <symbol id="road-shield-4-short" viewBox="0 0 24 24">
+      <rect x="1.5" y="3.5" width="21" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+    
+    <!-- Medium text version -->
+    <symbol id="road-shield-4-medium" viewBox="0 0 32 24">
+      <rect x="1.5" y="3.5" width="29" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+    
+    <!-- Long text version -->
+    <symbol id="road-shield-4-long" viewBox="0 0 80 24">
+      <rect x="1.5" y="3.5" width="77" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+
+    <!-- Legacy symbols for backward compatibility -->
+    <symbol id="road-shield-1" viewBox="0 0 24 24">
+      <rect x="1" y="3" width="22" height="18" rx="2" fill="#1e3a8a" stroke="#1e3a8a" stroke-width="1"/>
+      <rect x="1" y="3" width="22" height="4" rx="2" fill="#dc2626"/>
+      <path d="M1 19L7 22L7 19L1 16Z" fill="#1e3a8a"/>
+    </symbol>
+
+    <symbol id="road-shield-2" viewBox="0 0 24 24">
+      <rect x="1.5" y="3.5" width="21" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+
+    <symbol id="road-shield-3" viewBox="0 0 24 24">
+      <rect x="1.5" y="3.5" width="21" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+
+    <symbol id="road-shield-4" viewBox="0 0 24 24">
+      <rect x="1.5" y="3.5" width="21" height="17" rx="2.5" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+      <path d="M1.5 19.5L7 22L7 19.5L1.5 17Z" fill="#000000"/>
+    </symbol>
+  </defs>
+</svg> 

@@ -1,0 +1,217 @@
+,,,child of Parent_contact - create related table to add branch locations of Parent Contact,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Contact ID,Contact_name,Contact_type,sub_contact_name,sub_contact_ID,billing_address_contact_name,Billing_Address_line_1,Billing_Address_line_2,Billing_City,Billing_State,Billing_Zip,billing_email,billing_contact_note,Billing Type,Billing Name,Hourly Labor Rate,Discount_Rate,Contacts_SalesTax,Referral,Lead Source,URL,Service Zone,location_ID,location_address_line_1,location_address_line_2,Location_City,Location_State,Location_Zip,Location_Region,Location_Campus,Location_Building_name,location_route,service_zone,Location_PWSID,Location_Phone_No,WIFI_Network_Name,WIFI_Password,WIFI_ADMIN,Status,Contact 1 email,Architect Firm,Fax No.,Maintenance Profile,Architect,Electrical Contractor,MntcConStartDate,MntcConEndDate,Elect Foreman,Billing Dept.,Consultant,Installation Date,Consultant Cell,Spelling,Contractor,Route,Site Supervisor,Configuration Type,Supervisor Cell,Site Phone,Employees::Contact 1,Employees::Contact 1 Last Name,Employees::Contact 1 Direct Line,Employees::Contact 1 Cell Phone,Employees::Contact 1 email,Contact 1,Employees::Contact 1 Title,Employees::Key_Person,Employees::Contact Notes,Contact 1 Title,Contact 1 First Name,LastName,Access Key,Email Subscriber,Contract Terms,Custom_Field_Custom3,Contact 1 Direct Line,Contact 1 email,Contact 1 Cell Phone,Contact 2 Name,Contact 2 Title,Contact 2 Direct Line,Contact 2 email,Contact 2 Cell,General Notes,SpecialInstructions,Contact 1 Notes,Contact 2 Notes
+2120,BMW Group,Commercial-Rental,,,BMW (US) Holdings,PO Box 5808,,Spartanburg,SC,29304,USH_invoice@bmwmc.com,"Kerstin Schenk, Office Manager",,,$125.00 ,,9.000% ,Cold Call In,,,,,2606 BayShore Pkwy.,,Mt. View,CA,94043,NorCal,BMW Group,,,,,650.473.2009,,,,Customer-Active 2024,kerstin.schenk@bmw.de,,,,,,,,,Santa Clara,,,,OK - Parent,,,,,,,Christina Biberger,,650.934.3428,,christina.biberger@bmw.de,Kerstin Schenk,,,,Admin Supervisor,Kerstin,Schenk,,,,,650.934-3409,kerstin.schenk@bmw.de,,Kerstin Schenk,,650.473.2009,,650.934.3409,"AP change starting 12/17/09
+Email address:  APSC@BMWMC.com
+Telephone:  864-989-2772    Fax # 864-801-5164",,PO  2018 4600467324,"BMW Group Technology Office USA
+2606 Bayshore Parkway
+Mountain View, CA 94043
+Phone: +1 (650) 934 3409"
+468,Boggs.PA,Residential,,,,,,,,,,,,,,,,,,,,,490 Sherwood Way #3,,Menlo Park,CA,94025,,Boggs.PA,,,,,650.322.3602(H),,,,Customer-Active 2024,BoggsJ@pamf.org,,,,,,,,,,,,,,,,,,,,Amy Boggs,,,650-245-2725,amy@grantsport.com,,,YES,,,,,,,,,650.853.2977 Internal Medicine PAMC,BoggsJ@pamf.org,650.302.3029,,,,,,"Podiatry- Arthur Widtfeldt  650 853 2986
+Anne's Dr   - Margaret Forsyth",,"hm 322 3602
+
+May 5 ",
+3769,BrennanC.1560.PA,Residential,,,,,,,,,,,,,,,,,,,,,"1560 Sandhill Road Apt 401
+",,Palo Alto,CA,94304,,CBrennan,,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,3M,,,Chrisann Brennan,,,415-519-6473,chrisannbee@gmail.com,,,YES,,,,,,,,,,,,,,,,,,,,
+711,Cutera,Commercial-Rental,,,Accounts Payable,3240 Bayshore Blvd.,,Brisbane,CA,94005,finance-ap@cutera.com,,,,,,9.250% ,,,,,,3240 Bayshore Blvd,,Brisbane,CA,94005,NorCal,Cutera.Brisbane.3240,,,,,415.657.5500,,,,Customer-Active 2024,rmaqattash@cutera.com,,,,,,,,,San Mateo,,01/14/2004,,OK - Parent,,,,,,,Ron Maqattash,Ron,415-849-6880,,rmaqattash@cutera.com,Ron Maqattash,,,,Facilities Mgr.,,,,,,,,rmaqattash@cutera.com,415-849-6880,Bernie Schneider,,415.657.5542 ,,949-677-7339,,,,
+3223,"Elcor Electric, Inc.",Commercial-Rental,,,Sarah Johnson,3310 Bassett Street,,Santa Clara,CA,95054,ap@elcorelectric.com,"Sarah Johnson, sjohnson@elcorelectric.com",Monthly,,,,9.000% ,,,http://www.elcorelectric.com/,San Jose,,3310 Bassett Street,,Santa Clara,CA,95054,NorCal,Elcor.SantaClara,Elcor_3310_SClara,,,,408.986.1320,,,,Customer-Active 2024,sjohnson@elcorelectric.com,,,,,,,,,Santa Clara,,,,OK - Parent,,Santa Clara - 101,,Q-Series RO / Sparkling,,,,,,,,Sarah Johnson,,,Elcor Wifi   B@ss3tt%Unite,,,,,,,,408.886.3009,sjohnson@elcorelectric.com,408.656.2060,Sarah Johnson,,,,408.656.2060,,p/w   Bass3tt%Unite - elcor wifi,,
+890,FIT,Commercial-Rental,,,Attn: Serena,600 Rancho Shopping Center,,Los Altos,CA,94024,serena@focusedtrainers.com,,,,$125.00 ,,9.000% ,,,www.focusedtrainers.com,South,,600 Fremont Ave,,Los Altos,CA,94024,NorCal,FIT.LosAltos,,,,,650 947 9831x200,,,,Customer-Active 2024,admin@focusedtrainers.com,,650 745 3313,,,,,,,Santa Clara,,,,OK - Parent,,,,RO / Sparkling,,,elena,,650.947.9831,,,Serena,,,,,,,,,,,,admin@focusedtrainers.com,,Serina,,,,650-947-9831,"Tom
+Traci
+",,"10lbs Cylinder
+",
+3910,Fowler_315MissionRd_Sedona,Residential,,,,,,,,,,,,,,,,,,,,,315 Mission Road,,Sedona,AZ,86336,,Fowler_315_Sedona,Fowler_315_Sedona,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,,,,David Fowler,,,650-280-9003,dave@liquosio.com,,,,,,,,,,,,,,,,,,,,,,,
+3797,Hansen.T.Sedona.510Orchard,Residential,,,,,,,,,,,Customer,,,,,,,,Sedona,,580 Orchard Lane,,Sedona,AZ,86336,,Hansen.T.Sedona,HansenT_580_Sedona,,,,650.283.6160,,,,Customer-Active 2024,tonie.hansen@gmail.com,,,Residential-Bot,,,,,,Coconino,,,,,,,,WOW-50,,,Tonie Hansen,,,650.283.6160,tonie.hansen@gmail.com,,,YES,,,,,,,,,,tonie.hansen@gmail.com,,,,,,,,,,
+3192,HGA,Commercial-Rental,,,HGA Architects,84 W. Santa Clara St.,Suite 200,San Jose ,CA,95113,MPadilla@hga.com,,Rental,,,,9.250% ,,,,San Jose,,84 W. Santa Clara Suite 200,,San Jose,CA,95113,NorCal,HGA.SanJose,HGA_84W_SJose,,,,,,,,Customer-Active 2024,Kat Tran,,,,,,,,,,,,,OK - Parent,,,,Q-Series RO,,,,,,,,Charmayne Cormier-Craven ,,,hga.lan.psk  pw  greenwire ,,,,,,,,,Kat Tran,,,,,,,," Administrative Assistant  HGA   Architects and Engineers  84 W. Santa Clara Street, Suite 200 San Jose, CA 95113
+Direct 408.213.8201  |  Fax 408. 286.0851  ccormier-craven@hga.com  |  hga.com
+ ",,
+36,Lathrop GPM LLP ,Commercial-Rental,,,Accounts Payable,70 S. 1st Street,,San Jose,CA,95113,DP-AccountsPayable@lathropgpm.com,,,,$135.00 ,,9.000% ,,,,SJose.Downtown,,70 S. 1st ST,,San Jose,CA,95113,NorCal,Lathrop GPM LLP,70S_SJose,,,,408 286 9800,,,,Customer-Active 2024,djohnson@hopkinscarley.com,Reel Grobman,408 998  4790,Rental,Lisa Kohler,,,,,Santa Clara,,04/15/2000,,OK - Parent,,,,Off 4th stage to  UV In,,,,,,,jtapia@hopkinscarley.com,JOSE TAPIA,,,"Jose Tapia
+Director of Facilities & Legal Support Services
+
+Hopkins & Carley | A Law Corporation San Jose | Palo Alto
+70 South First Street | San Jose, CA 95113-2406
+Direct: 1-408-299-1440 | Main: 408.286.9800",,,,,,,,408.299.1301,djohnson@hopkinscarley.com,408-600-5615,,,,apb@hopkinscarley.com,,"Parking lot behind building off second street (near apollo), back door entrance for H &C - only stairs","Unload in front of building (on 1st street), then go around to rear of parking lot
+OKAY to park in front of building before 3pm 
+with commercial plates.  
+AFTER 3pm, move van to parking lot behind HC
+
+Sr Projects 
+
+","Arthur Bernstein
+408.299.1358
+apb@hopkinscarley.com","Owner : Tina Viglizzo
+Barry Swenson Builder
+(408) 938-6314
+tviglizzo@barryswensonbuilder.com
+Debbie Johnson
+Facilities Manager
+Hopkins & Carley
+A Law Corporation
+
+
+"
+2653,Lincoln Property Group,Commercial-Retail,,,,,,,,,,,Semi-Annual - PM,,$165.00 ,,9.000% ,,,,Sunnyvale,,100 Mathilda Place Suite 101,,Sunnyvale,CA,94086,NorCal,RiverRock.Mathilda.SV,100 Mathilda,,,,408.736.7609,,,,Customer-Active 2024,jchan@riverrockreg.com,,,,,,,,,Santa Clara,,,,OK - Parent,,Mathilda / Enterprise,,Q-Series RO,,,Carina Tahir,,,,ctahir@riverrockreg.com,Josephine Chan,,,Proj. Mgr.,,,,No Postcard,Email Me,,March / September,408.736.7609,jchan@riverrockreg.com,,Carina Tahir,,,,,"		 Myleen Cristobal | Project Coordinator  RiverRock Real Estate Group
+ 100 Mathilda Place, Suite 101 | Sunnyvale, Ca 94086
+ O: 408.736.7609 | F: 408.736.3843
+ Website | Brochure | vCard | ",,,
+2803,PlanetLabs,Commercial-Retail,,,Planet Labs,645 Harrison St. 4th Fl.,,San Francisco,CA,94107,,,Approval Only Required,,$165.00 ,,9.000% ,,,https://www.planet.com/,SF.Downtown,,645 Harrison St. 4th Fl.,,San Francisco,CA,94107,NorCal,Planet.645Harrison_SF,PlanetL_645_SF,,,,"415.829.3313
+
+
+",,,,Customer-Active 2024,,,,PM - Per Visit,,,,,,San Francisco,,,,OK - Parent,BNBT Builders,SF.Downtown,Nick Graziano,918 / Sparkling,,,,,,,,Alfredo Rosales,,,PlanetGuest - allyouneedisdove,,,,,,,,,,		,,,,,,"Ashley Gillespie
+Office Manager
+Planet
+ashley.gillespie@planet.com 
++1 (530) 728-0443
+www.planet.com","Planet Labs. has launched a new digital purchase order, invoice, and payments program with Coupa to get you paid faster. All invoices must now be submitted electronically using the free Coupa Supplier Portal (CSP). You can log into the CSP at: https://supplier.coupahost.com/. Please note this excludes legal vendors who are already using Counsel Go (Simple Legal) to submit invoices.
+
+You may also send all Planet Labs PBC invoices to invoices+PBC@planet.coupahost.com
+
+https://www.space.com/space-exploration/satellites/earth-observing-company-planet-signs-usd230-million-deal-for-fleet-of-new-pelican-satellites",,
+3992,Press Coffee,Commercial-Retail,,,,10443 N. 32nd St.,,Phoenix,AZ,85028,kyle@presscoffee.com,Kyle Ruona,,,,,,NAMA '23,,presscoffee.com,Phoenix,,10443 N. 32nd St.,,Phoenix,AZ,85028,Arizona,PressCoffee.AZ,Press_Roastery_10443_PHX,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,3M - Solventum,,,Alex Mason,,,,alex@presscoffee.com,,Operations (co Owner),YES,,,,,,,,,,,,,,,,,,"Kyle Ruona
+Press Coffee Roasters
+Director of Education and Training
+(707) 392-6689
+
+PW ProbatP!2
+
+Roastery2.4",,
+3718,Press Coffee,Commercial-Retail,Press Coffee_Roastery_10443_Phoenix,3992,Press Coffee_Roastery_10443_Phoenix,10443 N. 32nd St.,,Phoenix,AZ,85028,kyle@presscoffee.com,Kyle Ruona,,,,,,NAMA '23,,presscoffee.com,Phoenix,,10443 N. 32nd St.,,Phoenix,AZ,85028,Arizona,PressCoffee.AZ,Press_Roastery_10443_PHX,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,3M - Solventum,,,Alex Mason,,,,alex@presscoffee.com,,Operations (co Owner),YES,,,,,,,,,,,,,,,,,,"Kyle Ruona
+Press Coffee Roasters
+Director of Education and Training
+(707) 392-6689
+
+PW ProbatP!2
+
+Roastery2.4",,
+3916,Press Coffee,Commercial-Retail,Press Coffee_SQuarter_Scottsdale,3992,Press Coffee_SQuarter_Scottsdale,10443 N. 32nd St.,,Phoenix,AZ,85028,kyle@presscoffee.com,Kyle Ruona,,,,,,NAMA '23,,presscoffee.com,Phoenix,,15257 N. Scottsdale Rd ,,Scottsdale,AZ,85260,Arizona,PressCoffee.AZ,Press_SQ_15257_Scottsdale,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,3M - Solventum,,,Alex Mason,,,,alex@presscoffee.com,,Operations (co Owner),YES,,,,,,,,,,,,,,,,,,"Kyle Ruona
+Press Coffee Roasters
+Director of Education and Training
+(707) 392-6689
+
+TP-LINK_1590
+55885362",,
+3934,Press Coffee,Commercial-Retail,Press Coffee_Biltmore_PHX,3992,Press Coffee_Biltmore_PHX,10443 N. 32nd St.,,Phoenix,AZ,85028,kyle@presscoffee.com,Kyle Ruona,,,,,,NAMA '23,,presscoffee.com,Phoenix,,2390 E. Camelback Rd. - 150,,Phoenix,AZ,85016,Arizona,PressCoffee.AZ,Press_BiltmoreCenter,,,,(602) 283-5591,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,3M - Solventum,,,Alex Mason,,,,alex@presscoffee.com,,Operations (co Owner),YES,,,,,,,,,,,,,,,,,,"TP-Link_Private
+
+$Pro20!2
+
+",,
+3935,Press Coffee,Commercial-Retail,Press Coffee_WaterFront_Scottsdale,3992,Press Coffee_WaterFront_Scottsdale,10443 N. 32nd St.,,Phoenix,AZ,85028,kyle@presscoffee.com,Kyle Ruona,,,,,,NAMA '23,,presscoffee.com,Phoenix,,7135 E. Camelback Rd #145,,Scottsdale,AZ,85251,Arizona,PressCoffee.AZ,Press_WaterFront,,,,(480) 284-4044,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,3M - Solventum,,,Alex Mason,,,,alex@presscoffee.com,,Operations (co Owner),YES,,,,,,,,,,,,,,,,,,"SCOTTSDALE WATERFRONT
+7135 E Camelback Rd #145
+
+Scottsdale, AZ 85251
+
+(480) 284-4044",,
+3994,Press Coffee,Commercial-Retail,Press Coffee_SproutsGrocery_Osborn_ PHX,3992,Press Coffee_SproutsGrocery_Osborn_ PHX,10443 N. 32nd St.,,Phoenix,AZ,85028,kyle@presscoffee.com,Kyle Ruona,,,,,,,,,Phoenix,,3320 N. 7th Ave.,,Phoenix,AZ,85013,Arizona,PressCoffee.AZ,Press Coffee_SproutsGrocery_Osborn_ PHX,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,RO / Vertex,,,Alex Mason,,,,alex@presscoffee.com,,Operations (co Owner),YES,,,,,,,,,,,,,,,,,,,,
+3961,Proof Bread,Commercial-Retail,,,,136 W. Main St. ,,Mesa,AZ,85201,accounting@proofbread.com,Jonhudson@proofbread.com,,,,,,,,,Phoenix,,136 W. Main St. ,,Mesa,AZ,85201,Arizona,ProofBread_MesaAZ,,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,,,,Accounting,,,,"Accounting@proofbread.com
+",,,,,,,,,,,,,,,,,,,,,"Bill To: 
+Proof Bread 
+136 W Main St, Mesa AZ 85201
+Email: Accounting@proofbread.com 
+
+Deliver & Install To: 
+Proof Bread - ECO PHX 
+301 W Roosevelt St 
+Phoenix, AZ 85003 
+",,
+3962,Proof Bread,Commercial-Retail,ProofBread_Roosevelt_PHX,3961,,136 W. Main St. ,,Mesa,AZ,85201,accounting@proofbread.com,Jonhudson@proofbread.com,,,,,,,,,Phoenix,,301 W. Roosevelt St.,,Phoenix,AZ,85003,Arizona,ProofBread_MesaAZ,,,,,,,,,Customer-Active 2024,Jonhudson@proofbread.com,,,,,,,,,,,,,,,,,RO / Vertex,,,Accounting,,,,"Accounting@proofbread.com
+",Jonathan Hudson ,,,,Customer Experience,Jonathan,Hudson,,,,,,Jonhudson@proofbread.com,(480) 747-2933,,,,,,,"Bill To: 
+Proof Bread 
+136 W Main St, Mesa 
+Email: Accounting@proofbread.com 
+
+Deliver & Install To: 
+Proof Bread - ECO PHX 
+301 W Roosevelt St 
+Phoenix, AZ 85003 
+Downtown Mesa
+125 W Main St., Mesa, AZ 85201
+
+Phoenix Sheaborhood
+3110 E Shea Blvd, Phoenix, AZ 85028
+
+Open seven days a week from 7am to 7pm!
+
+Litchfield Park
+13331 W Indian School Rd, Unit 202, Litchfield Park, AZ 85340
+
+Downtown Phoenix
+301 W. Roosevelt St, Phoenix, AZ 85003
+",,
+3989,Proof Bread,Commercial-Retail,ProofBread_Tempe,3961,,136 W. Main St. ,,Mesa,AZ,85201,accounting@proofbread.com,Jonhudson@proofbread.com,,,,,,,,,Phoenix,,,,Tempe,AZ,,Arizona,ProofBread_MesaAZ,,,,,,,,,Customer-Active 2024,Jonhudson@proofbread.com,,,,,,,,,,,,,,,,,,,,Accounting,,,,"Accounting@proofbread.com
+",Jonathan Hudson ,,,,Customer Experience,Jonathan,Hudson,,,,,,Jonhudson@proofbread.com,(480) 747-2933,,,,,,,"Bill To: 
+Proof Bread 
+136 W Main St, Mesa 
+Email: Accounting@proofbread.com 
+
+Deliver & Install To: 
+Proof Bread - ECO PHX 
+301 W Roosevelt St 
+Phoenix, AZ 85003 
+Downtown Mesa
+125 W Main St., Mesa, AZ 85201
+
+Phoenix Sheaborhood
+3110 E Shea Blvd, Phoenix, AZ 85028
+
+Open seven days a week from 7am to 7pm!
+
+Litchfield Park
+13331 W Indian School Rd, Unit 202, Litchfield Park, AZ 85340
+
+Downtown Phoenix
+301 W. Roosevelt St, Phoenix, AZ 85003
+",,
+1276,Socome Produce Inc,Commercial-Rental,,,Jimmy Zhan,3201 Skyway Court,,Fremont,CA,,jimmyz@socomeproduce.com,,,,,,8.750% ,,,,South,," 
+",,Fremont ,CA,Fremont,NorCal,Eternal.Fremont,,,,,510.490.7111,,,,Customer-Active 2024,Helen ,,,,,,,,,Alameda,,12/15/1997,,ETER121597,,,,,,,Chi Chow,,,,lawschi@yahoo.com,Kevin Lai,Accounting,YES,Main Contact,,,,,,,,510.490.7111,Helen ,,Raymond Chan,,,,,,Tue & Thurs Are better for PM's,,
+3868,Sumbler_2528_Cottonwood,Residential,,,,,,,,,,,,,,,,,,,,,2528 S. Quail Run,,Cottonwood,AZ,86326,,DreeThom,,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+3993,Wexford,Commercial-Rental,,,,4 N. Martin Luther King Jr Blvd,,,,,ap@,,,,,,,,,,Baltimore MD,,4 N. Martin Luther King Jr Blvd. Suite 500 ,,Baltimore,MD,21201,,Wexford.4_N.MLK.Baltimore,Wexford_4N_Baltimore,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,,,,Henry Schmidt,,,,henry.schmidt@wexfordscitech.com,,AP Dept. | Processing,YES,Wexford handles Baltimore payments directly.  Other two locations are handled by the landlord.,,,,,,,,,,,,,,,,,"Mark VanderZyl   Director, Connect Labs Baltimore 
+ 
+d 410.649.5648
+mark.vanderzyl@wexfordconnectlabs.com 
+4 N. Martin Luther King Jr. Blvd., Floor 3
+Baltimore, MD 21201
+
+Kathy Webb
+Vice President, Connect Labs
+ 
+WEXFORD SCIENCE + TECHNOLOGY
+ 
+Wexford Science & Technology, LLC
+801 W. Baltimore Street, Suite 505, Baltimore, MD 21201
+d 410.649.5732  c 443.546.7938  wexfordscitech.com
+ 
+WE’RE MOVING.
+4 N. Martin Luther King Jr Blvd, Suite 500, Baltimore, MD 21201
+ 
+Launched in 2003, the BioPark is located on the west side of the University of Maryland, Baltimore campus in downtown Baltimore, Maryland. For early-stage to mature bioscience companies, the BioPark offers a sophisticated laboratory and office environment on the University’s vibrant academic medical center campus. In 2017, the Association for University Research Parks (AURP) named the BioPark the “Outstanding University Research Park of the Year.” At full build out, the BioPark will house nearly 2 million square feet of lab and office space in 12 buildings. The 4MLK development will consist of two new laboratory ready Class A office buildings supporting approximately 500,000 SF of lab, office, retail, and support space on eight to ten above grade floors",,
+3726,Wexford,Commercial-Rental,Wexford.8505thSt.PHX,3993,"PHOENIX BIOMEDICAL CAMPUS PHASE I REIT SUB, LLC",850 N. 5th Street ,,Phoenix,AZ,85004,apinvoices@ventasreit.com,inquire about issues to apinquiries@ventasreit.com - Rachel Miller rachel.miller@ceigateway.com,,,,,,,,,,,850 N. 5th Street ,,Phoenix,AZ,85004,,Wexford.850.5th.PHX,Wexford_850_PHX,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,,,,AP Dept.,,,,AP@wexfordscitech.com,,AP Email,YES,,,,,,,,,,,,,,,,,,"Kyle Jardine
+Wexford Science & Technology
+850 N. 5th Street
+Phoenix, AZ  85004 USA",,
+3892,Wexford,Commercial-Rental,Wexford.4_N.MLK.Baltimore,3993,Wexford Science and Technology,4 N. Martin Luther King Jr Blvd,Suite 500,Baltimore,MD,21201,ap@wexfordscitech.com,,,,,,,,,,Baltimore MD,,4 N. Martin Luther King Jr Blvd. Suite 500 ,,Baltimore,MD,21201,,Wexford.4_N.MLK.Baltimore,Wexford_4N_Baltimore,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,,,,Henry Schmidt,,,,henry.schmidt@wexfordscitech.com,,AP Dept. | Processing,YES,Wexford handles Baltimore payments directly.  Other two locations are handled by the landlord.,,,,,,,,,,,,,,,,,"Mark VanderZyl   Director, Connect Labs Baltimore 
+ 
+d 410.649.5648
+mark.vanderzyl@wexfordconnectlabs.com 
+4 N. Martin Luther King Jr. Blvd., Floor 3
+Baltimore, MD 21201
+
+Kathy Webb
+Vice President, Connect Labs
+ 
+WEXFORD SCIENCE + TECHNOLOGY
+ 
+Wexford Science & Technology, LLC
+801 W. Baltimore Street, Suite 505, Baltimore, MD 21201
+d 410.649.5732  c 443.546.7938  wexfordscitech.com
+ 
+WE’RE MOVING.
+4 N. Martin Luther King Jr Blvd, Suite 500, Baltimore, MD 21201
+ 
+Launched in 2003, the BioPark is located on the west side of the University of Maryland, Baltimore campus in downtown Baltimore, Maryland. For early-stage to mature bioscience companies, the BioPark offers a sophisticated laboratory and office environment on the University’s vibrant academic medical center campus. In 2017, the Association for University Research Parks (AURP) named the BioPark the “Outstanding University Research Park of the Year.” At full build out, the BioPark will house nearly 2 million square feet of lab and office space in 12 buildings. The 4MLK development will consist of two new laboratory ready Class A office buildings supporting approximately 500,000 SF of lab, office, retail, and support space on eight to ten above grade floors",,
+3929,Wexford - Connect Labs,Commercial-Rental,Wexford.SAC_2ndAve,3993,Connect Labs - Property 6909,"AS LLL- East TRS, LLC Property ","6909 4480 2nd Avenue, Suite 2300",Sacramento ,CA,95817,APinvoices@ventasreit.com,,,,,,,,,,,,4480 2nd Ave.,,Sacramento,CA,95817,,Wexford.SAC,,,,,,,,,Customer-Active 2024,,,,,,,,,,,,,,,,,,,,,,,,,AP@wexfordscitech.com,,,,,,,,,,,,,,,,,,,,,"4480 2nd Ave. SAC. 95817
+
+2nd Floor   2.MK.  Occupancy - April 4 — ",,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,Info on How they Started.,,,,https://thebrewedpalate.com/2020/12/15/mtb-proof-bread/,,,,From Polish Family --,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,Jonathan Hudson ,,,(480) 747-2933,Jonhudson@proofbread.com,,Customer Experience Director,YES,"
+Customer Experience Director Phone: (480) 747-2933 
+Email: Jonhudson@proofbread.com
+",,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,Jonathan Przybyl,,,,jon@proofbread.com,,Founder / CEO,YES,,,,,,,,,,,,,,,,,,,,
