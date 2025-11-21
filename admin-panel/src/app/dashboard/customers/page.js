@@ -411,11 +411,11 @@ export default function CustomerManagement() {
     <DashboardLayout>
       <div className="h-[calc(100vh-6rem)] -m-6">
         <div className="flex h-full">
-      {/* Customer Hierarchy Sidebar */}
+      {/* Contact Hierarchy Sidebar */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Customer Hierarchy</h2>
-          <p className="text-sm text-gray-500">Filter and manage your customers</p>
+          <h2 className="text-lg font-semibold text-gray-900">Contact Hierarchy</h2>
+          <p className="text-sm text-gray-500">Manage your contacts</p>
         </div>
         
         {/* Filters */}
@@ -517,7 +517,7 @@ export default function CustomerManagement() {
         <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Contact Management</h1>
 
             </div>
             
