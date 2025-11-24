@@ -95,7 +95,7 @@ const DashboardPage = () => {
       icon: BuildingOfficeIcon,
       title: "Contact Management",
       description: "Manage contacts and their hierarchical relationships",
-      href: "/dashboard/customers",
+      href: "/dashboard/contacts",
       color: "bg-green-500",
       iconColor: "text-white",
       requiredRole: 'ADMIN' // All admin roles can see this
@@ -281,7 +281,7 @@ const DashboardPage = () => {
             {/* Quick Links */}
             <div className="flex flex-col gap-3">
               <button
-                onClick={() => router.push('/dashboard/customers')}
+                onClick={() => router.push('/dashboard/contacts')}
                 className="group text-left text-sm sm:text-base text-blue-100 hover:text-white transition"
               >
                 <span className="block">Contact Management</span>

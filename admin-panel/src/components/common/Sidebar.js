@@ -36,8 +36,8 @@ const Sidebar = ({ isCollapsed = false, onHover, onCategoryClick }) => {
     if (pathname.startsWith('/dashboard/v1') || pathname.startsWith('/dashboard/v2')) {
       setExpandedItems(prev => { const next = new Set(prev); next.add('dashboard'); return next; });
     }
-    if (pathname.startsWith('/dashboard/customers')) {
-      setExpandedItems(prev => { const next = new Set(prev); next.add('customers'); return next; });
+    if (pathname.startsWith('/dashboard/contacts')) {
+      setExpandedItems(prev => { const next = new Set(prev); next.add('contacts'); return next; });
     }
   }, [pathname]);
 
@@ -89,7 +89,7 @@ const Sidebar = ({ isCollapsed = false, onHover, onCategoryClick }) => {
       icon: BuildingOfficeIcon,
       badge: null,
       requiredRole: null, // All admin users can see this (checked via hasAdminAccess)
-      href: '/dashboard/customers',
+      href: '/dashboard/contacts',
       children: []
     },
     {
