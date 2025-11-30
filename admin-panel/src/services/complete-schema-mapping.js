@@ -374,7 +374,9 @@ export const COMPLETE_SCHEMA_MAPPING = {
       'fax', 'preferred_contact_method', 'username', 'password_hash', 'is_primary', 
       'can_login', 'last_login', 'status', 'created_at', 'updated_at',
       // Added in migration 9
-      'phone', 'company', 'notes', 'is_active'
+      'phone', 'company', 'notes', 'is_active',
+      // Added in migration 10
+      'category_id', 'location_id', 'is_liquoslabs_account' 
     ],
     primaryKey: 'id',
     displayName: 'Enhanced Contacts',

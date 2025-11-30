@@ -93,8 +93,8 @@ const DashboardPage = () => {
     },
     {
       icon: BuildingOfficeIcon,
-      title: "Contact Management",
-      description: "Manage contacts and their hierarchical relationships",
+      title: "Customer Management",
+      description: "Manage customers and their hierarchical relationships",
       href: "/dashboard/customers",
       color: "bg-green-500",
       iconColor: "text-white",
@@ -136,15 +136,15 @@ const DashboardPage = () => {
       iconColor: "text-white",
       requiredRole: 'PLATFORM_ADMIN'
     },
-    // {
-    //   icon: UserIcon,
-    //   title: "Contact Management",
-    //   description: "Manage contacts and their data",
-    //   href: "/dashboard/contacts",
-    //   color: "bg-teal-500",
-    //   iconColor: "text-white",
-    //   requiredRole: 'PLATFORM_ADMIN' // Only Platform Admins can see this
-    // },
+    {
+      icon: UserIcon,
+      title: "Contact Management",
+      description: "Manage contacts and their data",
+      href: "/dashboard/contacts",
+      color: "bg-teal-500",
+      iconColor: "text-white",
+      requiredRole: 'PLATFORM_ADMIN' // Only Platform Admins can see this
+    },
   ];
 
   // Filter navigation cards based on user role
@@ -284,7 +284,7 @@ const DashboardPage = () => {
                 onClick={() => router.push('/dashboard/customers')}
                 className="group text-left text-sm sm:text-base text-blue-100 hover:text-white transition"
               >
-                <span className="block">Contact Management</span>
+                <span className="block">Customer Management</span>
                 <span className="block h-px w-0 group-hover:w-40 bg-gradient-to-r from-cyan-300 to-blue-400 transition-all duration-300"></span>
               </button>
               <button
