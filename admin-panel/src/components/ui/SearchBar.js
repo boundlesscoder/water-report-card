@@ -171,7 +171,11 @@ export default function SearchBar({
     onChange(valueToSet);
     setSearchQuery(valueToSet);
     setIsDropdownOpen(false);
-    inputRef.current?.blur();
+    // Keep focus to show blue border for last selected searchbar
+    // Don't blur immediately - let the parent handle it
+    setTimeout(() => {
+      inputRef.current?.blur();
+    }, 100);
   };
 
   // Handle remove button click - clear search condition
@@ -227,7 +231,7 @@ export default function SearchBar({
           className={`w-full pl-8 pr-8 py-1.5 text-sm border rounded-md transition-all ${
             isActive
               ? 'border-blue-500 ring-2 ring-blue-500 ring-opacity-50 shadow-sm'
-              : (value && value.trim() !== '' && value.toLowerCase() !== 'show all')
+              : (value && value.trim() !== '')
               ? 'border-black ring-1 ring-black ring-opacity-40 shadow-sm'
               : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
           }`}

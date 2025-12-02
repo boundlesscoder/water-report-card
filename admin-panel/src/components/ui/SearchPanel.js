@@ -25,6 +25,8 @@ export default function SearchPanel({
   activeSearches = [],
   onSearchChange,
   onClear,
+  onSearchFocus,
+  lastActiveSearchId = null,
   showAddButton = true,
   maxSearches = 5,
   className = ''
@@ -90,12 +92,15 @@ export default function SearchPanel({
     );
     setSearches(updatedSearches);
     onSearchChange?.(updatedSearches);
+    // Set this searchbar as the last active one when a value is selected
+    setActiveSearchId(searchId);
   }, [searches, onSearchChange]);
 
   // Handle search bar focus
   const handleSearchFocus = useCallback((searchId) => {
     setActiveSearchId(searchId);
-  }, []);
+    onSearchFocus?.(searchId);
+  }, [onSearchFocus]);
 
   // Handle clear all
   const handleClearAll = useCallback(() => {
@@ -166,7 +171,7 @@ export default function SearchPanel({
                 valueOptions={fieldConfig?.valueOptions || []}
                 placeholder={fieldConfig?.placeholder || `Search by ${selectedField?.label || 'field'}...`}
                 hasAllOption={fieldConfig?.hasAllOption || false}
-                isActive={activeSearchId === search.id}
+                isActive={lastActiveSearchId === search.id || activeSearchId === search.id}
                 onFocus={handleSearchFocus}
               />
             </div>

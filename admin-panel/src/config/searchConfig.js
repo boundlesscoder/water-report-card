@@ -1,5 +1,5 @@
 export const contactConfig = [
-    { id: 'name', name: 'Customer', label: 'Search', type: 'text', placeholder: 'Customer...', sortable: true, sortOption: 'asc' },
+    { id: 'name', name: 'Customer', label: 'Search', type: 'text', placeholder: 'Customer...', hasAllOption: true, sortable: true, sortOption: 'asc' },
     { id: 'contact_type', name: 'Contact Type', label: '', type: 'text', placeholder: 'Contact type...', sortable: false},
     { id: 'category_description', name: 'Category Description', label: '', type: 'text', placeholder: 'Category description...', sortable: false},
     { id: 'region', name: 'Region', label: '', type: 'text', placeholder: 'Region...', hasAllOption: true, sortable: true, sortOption: 'asc' },

@@ -14,6 +14,7 @@ import { ArrowUpIcon, ArrowDownIcon, XMarkIcon } from '@heroicons/react/24/outli
  * @param {Function} props.onSortDirectionChange - Callback when sort direction changes
  * @param {Function} props.onRemove - Callback to remove this sort bar
  * @param {boolean} props.removable - Whether this sort bar can be removed
+ * @param {boolean} props.isAutoAdded - Whether this sort bar was auto-generated (not removable)
  */
 export default function SortBar({
   id,
@@ -22,7 +23,8 @@ export default function SortBar({
   sortDirection = 'asc',
   onSortDirectionChange,
   onRemove,
-  removable = true
+  removable = true,
+  isAutoAdded = false
 }) {
   // Handle button click - toggle sort direction
   const handleClick = () => {
@@ -62,8 +64,8 @@ export default function SortBar({
         )}
       </button>
 
-      {/* Remove Button */}
-      {removable && onRemove && (
+      {/* Remove Button - Only show if removable and not auto-generated */}
+      {removable && !isAutoAdded && onRemove && (
         <button
           onClick={handleRemove}
           className="flex-shrink-0 p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
