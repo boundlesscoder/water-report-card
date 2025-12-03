@@ -13,6 +13,8 @@ import {
   ListBulletIcon,
   MapIcon,
   ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
@@ -49,6 +51,7 @@ export default function ContactManagement() {
   const [activeSortId, setActiveSortId] = useState(null); // Track which sort bar is currently active
   const [lastActiveSearchId, setLastActiveSearchId] = useState(null); // Track which searchbar was last selected
   const [expandAll, setExpandAll] = useState(false); // Track "Expand all" checkbox state
+  const [isSearchPanelCollapsed, setIsSearchPanelCollapsed] = useState(false); // Track search panel collapse state
 
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -263,54 +266,47 @@ export default function ContactManagement() {
     return null;
   }, []);
 
-  // Calculate big LOCATION based on filtered data
+  // Calculate hierarchical location structure based on what's actually searched
+  // Logic: Show only the location fields that are in the search, in hierarchical order
+  // Examples:
+  // - Name only → null (flat list)
+  // - Name + specific region → region (Region → States → Sub-contacts)
+  // - Name + "Show all regions" → region (Regions → Sub-contacts, skip states)
+  // - Name + specific region + specific state → region (Region → State → Sub-contacts)
+  // - Name + specific region + "Show all states" → region (Region → All States → Sub-contacts)
+  // - Name + specific region + specific city → region (Region → City → Sub-contacts, skip state)
   const bigLocationField = useMemo(() => {
-    // Check if there are any active searches (excluding "Show all" and empty values)
-    const hasActiveSearches = activeSearches.some(search => {
+    // Define hierarchical location fields in order
+    const hierarchicalFields = ['region', 'state', 'city', 'service_zone', 'route'];
+    
+    // Find all location fields being searched (both specific values and "Show all")
+    const searchedLocationFields = activeSearches
+      .filter(search => {
       if (!search.value) return false;
       const trimmedValue = search.value.trim();
-      if (trimmedValue === '' || trimmedValue.toLowerCase() === 'show all') return false;
-      return true;
+        return trimmedValue !== '' && hierarchicalFields.includes(search.fieldId);
+      })
+      .map(search => ({
+        fieldId: search.fieldId,
+        value: search.value.trim(),
+        isShowAll: search.value.trim().toLowerCase() === 'show all'
+      }))
+      .sort((a, b) => {
+        // Sort by hierarchical order
+        const indexA = hierarchicalFields.indexOf(a.fieldId);
+        const indexB = hierarchicalFields.indexOf(b.fieldId);
+        return indexA - indexB;
     });
 
-    if (!hasActiveSearches) {
+    // Rule 1: If no location fields are searched → return null (flat list)
+    if (searchedLocationFields.length === 0) {
       return null;
     }
 
-    // Calculate filtered data for "big LOCATION" analysis
-    const filteredData = allContacts.filter(row => {
-      return activeSearches.every(condition => {
-        if (!condition.value || condition.value.trim() === '' || condition.value.toLowerCase() === 'show all') {
-          return true;
-        }
-        let fieldValue = row[condition.fieldId];
-        
-        // Handle field mappings
-        if (condition.fieldId === 'category' && row.category_description) {
-          fieldValue = row.category_description;
-        } else if (condition.fieldId === 'location' && row.location_name) {
-          fieldValue = row.location_name;
-        } else if (condition.fieldId === 'is_liquoslabs_account') {
-          fieldValue = row.is_liquos_account ? 'Yes' : 'No';
-        }
-        
-        if (fieldValue === null || fieldValue === undefined) return false;
-        
-        const searchValue = condition.value.toLowerCase().trim();
-        const rowValue = String(fieldValue).toLowerCase();
-        
-        // For contact_type, check if search value matches any part of the field value
-        if (condition.fieldId === 'contact_type') {
-          const parts = rowValue.split('/').map(p => p.trim());
-          return parts.some(part => part === searchValue) || rowValue === searchValue;
-        }
-        
-        return rowValue.includes(searchValue);
-      });
-    });
-
-    return getBigLocationField(filteredData);
-  }, [activeSearches, allContacts, getBigLocationField]);
+    // Rule 2: Return the FIRST (lowest/highest) hierarchical location field being searched
+    // This becomes the root level of the hierarchy
+    return searchedLocationFields[0].fieldId;
+  }, [activeSearches]);
 
   // Automatically add sort bars when searching in sortable fields
   // Only run when activeSearches or searchConfig changes, not when activeSorts changes
@@ -481,10 +477,62 @@ export default function ContactManagement() {
     }
     // If no active search conditions (all are "Show all" or empty), show all data
 
-    // Apply sorting: First by big LOCATION (alphabetically), then by active sortbars
+    // Apply sorting
+    // If no bigLocationField (only name searched), sort by name sortbar only
+    // If bigLocationField exists, sort by big LOCATION first, then by active sortbars
     const hierarchicalFields = ['region', 'state', 'city', 'service_zone', 'route'];
     
     data = [...data].sort((a, b) => {
+      // If no bigLocationField, skip location sorting and go straight to sortbars
+      if (!bigLocationField) {
+        // Sort only by active sortbars (name sortbar should be present)
+        for (const sort of activeSorts) {
+          let aValue = a[sort.fieldId];
+          let bValue = b[sort.fieldId];
+
+          // Handle field mappings
+          if (sort.fieldId === 'category') {
+            aValue = a.category_description || a.category || aValue;
+            bValue = b.category_description || b.category || bValue;
+          } else if (sort.fieldId === 'location') {
+            aValue = a.location_name || a.location || aValue;
+            bValue = b.location_name || b.location || bValue;
+          } else if (sort.fieldId === 'is_liquoslabs_account') {
+            aValue = a.is_liquos_account !== undefined ? (a.is_liquos_account ? 'Yes' : 'No') : aValue;
+            bValue = b.is_liquos_account !== undefined ? (b.is_liquos_account ? 'Yes' : 'No') : bValue;
+          }
+
+          // Handle null/undefined/empty string values
+          if (aValue === null || aValue === undefined || aValue === '') {
+            if (bValue === null || bValue === undefined || bValue === '') {
+              continue;
+            }
+            return 1;
+          }
+          if (bValue === null || bValue === undefined || bValue === '') {
+            return -1;
+          }
+
+          let comparison = 0;
+          if (typeof aValue === 'string') {
+            comparison = aValue.localeCompare(bValue, undefined, { sensitivity: 'base' });
+          } else if (typeof aValue === 'number') {
+            comparison = aValue - bValue;
+          } else {
+            comparison = String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' });
+          }
+
+          if (sort.direction === 'desc') {
+            comparison = -comparison;
+          }
+
+          if (comparison !== 0) {
+            return comparison;
+          }
+        }
+        return 0;
+      }
+
       // First: Sort by big LOCATION (always alphabetical, ascending)
       if (bigLocationField) {
         let aBigLocation = a[bigLocationField];
@@ -674,25 +722,48 @@ export default function ContactManagement() {
       <div className="h-[calc(100vh-6rem)] -m-6">
         <div className="flex h-full">
           {/* Left Sidebar - SearchPanel */}
-          <div className="w-80 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
-            <div className="px-4 py-3 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Contact Management</h2>
-              <p className="text-sm text-gray-500">Search and filter contacts</p>
+          {!isSearchPanelCollapsed ? (
+            <div className="w-80 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 transition-all duration-300">
+              <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Contact Management</h2>
+                  <p className="text-sm text-gray-500">Search and filter contacts</p>
+                </div>
+                <button
+                  onClick={() => setIsSearchPanelCollapsed(true)}
+                  className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                  title="Collapse search panel"
+                >
+                  <ChevronLeftIcon className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-4">
+                <SearchPanel
+                  searchConfig={searchConfig}
+                  activeSearches={activeSearches}
+                  onSearchChange={handleSearchChange}
+                  onSearchFocus={handleSearchFocus}
+                  lastActiveSearchId={lastActiveSearchId}
+                  maxSearches={searchConfig.length} // Show all search bars from config
+                  showAddButton={false} // Hide add button since all search bars are shown
+                  className="border-0 shadow-none"
+                />
+              </div>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-4">
-              <SearchPanel
-                searchConfig={searchConfig}
-                activeSearches={activeSearches}
-                onSearchChange={handleSearchChange}
-                onSearchFocus={handleSearchFocus}
-                lastActiveSearchId={lastActiveSearchId}
-                maxSearches={searchConfig.length} // Show all search bars from config
-                showAddButton={false} // Hide add button since all search bars are shown
-                className="border-0 shadow-none"
-              />
+          ) : (
+            <div className="w-12 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 transition-all duration-300">
+              <div className="px-2 py-3 border-b border-gray-200 flex items-center justify-center">
+                <button
+                  onClick={() => setIsSearchPanelCollapsed(false)}
+                  className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                  title="Expand search panel"
+                >
+                  <ChevronRightIcon className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Main Content */}
           <div className="flex-1 flex flex-col h-full overflow-hidden">
