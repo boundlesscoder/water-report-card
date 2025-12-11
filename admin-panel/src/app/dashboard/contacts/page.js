@@ -51,6 +51,7 @@ export default function ContactManagement() {
   const [activeSortId, setActiveSortId] = useState(null); // Track which sort bar is currently active
   const [lastActiveSearchId, setLastActiveSearchId] = useState(null); // Track which searchbar was last selected
   const [expandAll, setExpandAll] = useState(false); // Track "Expand all" checkbox state
+  const [expandedPaths, setExpandedPaths] = useState(new Set()); // Track expanded paths (shared between list and map views)
   const [isSearchPanelCollapsed, setIsSearchPanelCollapsed] = useState(false); // Track search panel collapse state
 
   // Pagination state
@@ -88,7 +89,7 @@ export default function ContactManagement() {
         hasNext: transformedData.length > prev.limit
       }));
     } catch (error) {
-      console.error('Error loading contact data:', error);
+      // Error loading contact data - handle silently or log to error tracking service
     } finally {
       setLoading(false);
     }
@@ -185,13 +186,13 @@ export default function ContactManagement() {
       return {
         id: config.id,
         name: config.name,
-        label: config.label || config.id,
+        label: config.name, // Use name as label
         type: config.type || 'text',
-        placeholder: config.placeholder || `Search by ${config.id}...`,
+        placeholder: config.placeholder || `Search by ${config.name}...`,
         valueOptions: uniqueValues, // Unique values from filtered/searched records
         options: config.options || [],
-        sortable: config.sortable !== undefined ? config.sortable : true, // Include sortable property
-        hasAllOption: config.hasAllOption || false // Include hasAllOption property
+        sortable: true, // All fields are sortable by default
+        hasAllOption: true // All fields have "Show all" option by default
       };
     });
   }, [contactConfig, getUniqueValues, filteredDataForDropdowns, allContacts]);
@@ -308,18 +309,17 @@ export default function ContactManagement() {
     return searchedLocationFields[0].fieldId;
   }, [activeSearches]);
 
-  // Automatically add sort bars when searching in sortable fields
-  // Only run when activeSearches or searchConfig changes, not when activeSorts changes
+  // Automatically add sort bars when searching in any field
+  // All fields are sortable by default
   useEffect(() => {
-    // Get fields that have active searches (with values, including "Show all") AND are sortable
-    const searchedSortableFields = activeSearches
+    // Get fields that have active searches (with values, including "Show all")
+    // All fields are sortable, so no need to check sortable property
+    const searchedFields = activeSearches
       .filter(s => {
         if (!s.fieldId) return false;
         // Include searches with "Show all" or any non-empty value
         if (!s.value || s.value.trim() === '') return false;
-        // Check if this field is sortable
-        const config = searchConfig.find(c => c.id === s.fieldId);
-        return config && config.sortable === true;
+        return true; // All fields are sortable
       })
       .map(s => s.fieldId);
 
@@ -327,21 +327,17 @@ export default function ContactManagement() {
       // Get current sorted fields
       const sortedFields = prev.map(s => s.fieldId);
 
-      // Find sortable fields that are searched but not yet sorted
-      const fieldsToAdd = searchedSortableFields.filter(fieldId => !sortedFields.includes(fieldId));
+      // Find fields that are searched but not yet sorted
+      const fieldsToAdd = searchedFields.filter(fieldId => !sortedFields.includes(fieldId));
 
-      // Automatically add sort bars for newly searched sortable fields
+      // Automatically add sort bars for newly searched fields
       let updatedSorts = [...prev];
       if (fieldsToAdd.length > 0) {
         const newSorts = fieldsToAdd.map(fieldId => {
-          // Get sortOption from config if available
-          const config = searchConfig.find(c => c.id === fieldId);
-          const defaultDirection = config?.sortOption === 'desc' ? 'desc' : 'asc';
-          
           return {
             id: `sort-${Date.now()}-${Math.random()}-${fieldId}`,
             fieldId: fieldId,
-            direction: defaultDirection,
+            selectedValue: null, // No value selected initially
             isAutoAdded: true // Mark as auto-added
           };
         });
@@ -356,7 +352,7 @@ export default function ContactManagement() {
       // Keep manually added sort bars even if the field is not being searched
       const sortsToKeep = updatedSorts.filter(sort => {
         // Keep if field is still being searched
-        if (searchedSortableFields.includes(sort.fieldId)) {
+        if (searchedFields.includes(sort.fieldId)) {
           return true;
         }
         // Keep if it was manually added (not auto-added)
@@ -416,7 +412,7 @@ export default function ContactManagement() {
       // Find the sort being updated to ensure it exists
       const sortExists = prev.find(s => s.id === sortId);
       if (!sortExists) {
-        console.warn('Sort not found:', sortId, 'in sorts:', prev.map(s => s.id));
+        // Sort not found - return previous state
         return prev;
       }
       // Update the sort direction
@@ -427,6 +423,23 @@ export default function ContactManagement() {
       );
     });
   }, []);
+
+  // Handle sort value selection from dropdown
+  const handleSortValueSelect = useCallback((sortId, value) => {
+    setActiveSorts(prev => {
+      return prev.map(sort => 
+        sort.id === sortId 
+          ? { ...sort, selectedValue: value }
+          : sort
+      );
+    });
+  }, []);
+
+  // Get dropdown options for a field
+  const getDropdownOptions = useCallback((fieldId) => {
+    // Get unique values for this field from all contacts
+    return getUniqueValues(fieldId, allContacts);
+  }, [getUniqueValues, allContacts]);
 
   // Apply filtering and sorting to data
   const processedData = useMemo(() => {
@@ -636,13 +649,13 @@ export default function ContactManagement() {
     return null;
   }, [activeSearches, allContacts]);
 
-  // Check if there are any active search conditions (excluding "Show all" and empty values)
+  // Check if there are any active search conditions (including "Show all" - it's an active search but doesn't filter)
   const hasActiveSearches = useMemo(() => {
     return activeSearches.some(search => {
       if (!search.value) return false;
       const trimmedValue = search.value.trim();
       if (trimmedValue === '') return false;
-      if (trimmedValue.toLowerCase() === 'show all') return false;
+      // "Show all" is considered an active search (so list shows), but it doesn't filter
       return true;
     });
   }, [activeSearches]);
@@ -688,7 +701,7 @@ export default function ContactManagement() {
       <div className="flex items-center gap-2">
         <button 
           onClick={() => {
-            console.log('View contact:', row.id);
+            // View contact functionality
           }}
           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
           title="View contact"
@@ -697,7 +710,7 @@ export default function ContactManagement() {
         </button>
         <button 
           onClick={() => {
-            console.log('Edit contact:', row.id);
+            // Edit contact functionality
           }}
           className="p-1.5 text-gray-600 hover:bg-gray-50 rounded transition-colors"
           title="Edit contact"
@@ -706,7 +719,7 @@ export default function ContactManagement() {
         </button>
         <button 
           onClick={() => {
-            console.log('Delete contact:', row.id);
+            // Delete contact functionality
           }}
           className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
           title="Delete contact"
@@ -871,7 +884,8 @@ export default function ContactManagement() {
                 activeSearches={activeSearches}
                 activeSorts={activeSorts}
                 onSortChange={handleSortChange}
-                onSortDirectionChange={handleSortDirectionChange}
+                onSortValueSelect={handleSortValueSelect}
+                getDropdownOptions={getDropdownOptions}
                 maxSorts={searchConfig.length} // Allow sorting by all fields
                 className="border-0 shadow-none"
               />
@@ -899,15 +913,15 @@ export default function ContactManagement() {
               <div className="flex-1 overflow-y-auto">
                 <HierarchicalContactView
                   contacts={processedData}
-                  parentContactName={parentContactName}
+                  allContacts={allContacts}
                   hasActiveSearches={hasActiveSearches}
-                  bigLocationField={bigLocationField}
                   activeSearches={activeSearches}
                   activeSorts={activeSorts}
                   expandAll={expandAll}
+                  expandedPaths={expandedPaths}
+                  onExpandedPathsChange={setExpandedPaths}
                   onContactSelect={(contact) => {
                     setSelectedContactId(contact.id);
-                    console.log('Selected contact:', contact);
                   }}
                   onContactDoubleClick={(contact) => {
                     setSelectedContact(contact);
@@ -930,12 +944,13 @@ export default function ContactManagement() {
                 <div className="absolute left-0 top-0 w-80 max-h-[80vh] overflow-y-auto bg-transparent/100 backdrop-blur-xs border-r border-gray-200/50 shadow-lg z-10 rounded-r-lg">
                     <HierarchicalContactView
                       contacts={processedData}
-                      parentContactName={parentContactName}
+                      allContacts={allContacts}
                       hasActiveSearches={hasActiveSearches}
-                      bigLocationField={bigLocationField}
                       activeSearches={activeSearches}
                       activeSorts={activeSorts}
                       expandAll={expandAll}
+                      expandedPaths={expandedPaths}
+                      onExpandedPathsChange={setExpandedPaths}
                       onContactSelect={(contact) => {
                         setSelectedContactId(contact.id);
                       }}
