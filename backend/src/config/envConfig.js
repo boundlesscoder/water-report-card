@@ -1,5 +1,13 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '/root/WRC-Alex-Dev/backend/.env' });
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get the directory of the current file (ES modules)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from the backend root directory (2 levels up from src/config/)
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 export const DATABASE_URL=process.env.DATABASE_URL;
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;

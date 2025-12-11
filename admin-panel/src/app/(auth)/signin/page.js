@@ -75,8 +75,9 @@ export default function LoginPage() {
         try {
             const res = await api.post("/api/auth/login", formData);
             const json = res.data;
-
-            const { token: accessToken, user, memberships, consumer } = json.data;
+            console.log('Login response:', json);
+            // API route returns: { accessToken, user, memberships, consumer, ... }
+            const { accessToken, user, memberships, consumer } = json;
 
             // Store user data
             const userData = {
