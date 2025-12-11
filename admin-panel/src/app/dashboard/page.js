@@ -138,9 +138,9 @@ const DashboardPage = () => {
     },
     {
       icon: UserIcon,
-      title: "Customer Management",
-      description: "Manage customers and their data",
-      href: "/dashboard/customers",
+      title: "Contact Management",
+      description: "Manage contacts and their data",
+      href: "/dashboard/contacts",
       color: "bg-teal-500",
       iconColor: "text-white",
       requiredRole: 'PLATFORM_ADMIN' // Only Platform Admins can see this

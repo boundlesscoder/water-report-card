@@ -39,6 +39,9 @@ const Sidebar = ({ isCollapsed = false, onHover, onCategoryClick }) => {
     if (pathname.startsWith('/dashboard/customers')) {
       setExpandedItems(prev => { const next = new Set(prev); next.add('customers'); return next; });
     }
+    if (pathname.startsWith('/dashboard/contacts')) {
+      setExpandedItems(prev => { const next = new Set(prev); next.add('contacts'); return next; });
+    }
   }, [pathname]);
 
   // Check if user has admin access - allow various admin roles
@@ -93,6 +96,15 @@ const Sidebar = ({ isCollapsed = false, onHover, onCategoryClick }) => {
       children: []
     },
     {
+      id: 'contacts',
+      label: 'Contact Management',
+      icon: UserIcon,
+      badge: null,
+      requiredRole: null, // All admin users can see this (checked via hasAdminAccess)
+      href: '/dashboard/contacts',
+      children: []
+    },
+    {
       id: 'user-management',
       label: 'User Management',
       icon: UserGroupIcon,
@@ -121,7 +133,7 @@ const Sidebar = ({ isCollapsed = false, onHover, onCategoryClick }) => {
     },
     {
       id: 'crm-cmms',
-      label: 'CRM & CMMS Management',
+      label: 'Maintenance Management',
       icon: BuildingOfficeIcon,
       badge: null,
       requiredRole: 'WATERREPORTCARD_SUPER_ADMIN', // Only WaterReportCard Super Admins can see this
