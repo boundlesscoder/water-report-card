@@ -5,7 +5,8 @@ export async function POST(request) {
     const { email, password } = await request.json();
 
     // Call your real backend API
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:2018'}/api/auth/login`;
+    // Backend endpoint is /auth/login (not /api/auth/login)
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://69.16.254.46:2018'}/auth/login`;
     console.log('Attempting login to:', backendUrl);
     
     const backendResponse = await fetch(backendUrl, {
