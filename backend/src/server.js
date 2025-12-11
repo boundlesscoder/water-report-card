@@ -29,8 +29,8 @@ const corsOptions = {
     origin: [
         'https://www.waterreportcard.com',
         'https://waterreportcard.com',
-        'http://50.28.103.78:4001',
-        'http://50.28.103.78:4000',
+        'http://69.16.254.46:4001',
+        'http://69.16.254.46:4000',
         'https://admin.waterreportcard.com',
         'http://admin.waterreportcard.com',
         'http://localhost:3000',

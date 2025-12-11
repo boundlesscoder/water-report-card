@@ -2,21 +2,11 @@
 import { LOCAL_STORAGE } from "@/utils/constants";
 import axios from "axios";
 
-// Use the same backend URL pattern as the main frontend
-const getBackendURL = () => {
-    // Always use environment variable if set
-    if (process.env.NEXT_PUBLIC_API_URL) {
-        return process.env.NEXT_PUBLIC_API_URL;
-    }
-    
-    // For development, always use localhost backend
-    return 'http://localhost:2018';
-};
-
-const baseURL = getBackendURL();
-
+// Use relative URLs to hit Next.js API routes (which then proxy to backend)
+// This avoids CORS issues since requests stay on the same origin
+// Next.js API routes are at /api/* and handle proxying to the backend
 const api = axios.create({
-  baseURL,
+  baseURL: '', // Empty baseURL = relative URLs = same origin = no CORS issues
   headers: {
     "Content-Type": "application/json",
   },
