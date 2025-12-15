@@ -413,9 +413,9 @@ export default function CustomerManagement() {
         <div className="flex h-full">
       {/* Customer Hierarchy Sidebar */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Customer Hierarchy</h2>
-          <p className="text-sm text-gray-500">Filter and manage your customers</p>
+        <div className="px-4 py-2 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Customer Management</h2>
+          <p className="text-sm text-gray-500">Manage your customers</p>
         </div>
         
         {/* Filters */}
@@ -427,7 +427,7 @@ export default function CustomerManagement() {
               <MagnifyingGlassIcon className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search customers..."
+                placeholder="Search contacts..."
                 value={hierarchyFilters.search}
                 onChange={(e) => setHierarchyFilters(prev => ({ ...prev, search: e.target.value }))}
                 className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
@@ -514,7 +514,7 @@ export default function CustomerManagement() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0">
+        <div className="bg-white border-b border-gray-200 px-6 py-2 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
@@ -523,7 +523,7 @@ export default function CustomerManagement() {
             
             <div className="flex items-center space-x-3">
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1 divide-x divide-gray-200">
+              <div className="flex bg-gray-100 rounded-lg p-2 divide-x divide-gray-200">
                 <button
                   onClick={() => setViewMode('list')}
                   className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 ${
@@ -553,7 +553,7 @@ export default function CustomerManagement() {
                 className="px-2.5 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
               >
                 <PlusIcon className="w-4 h-4" />
-                <span>Add Customer</span>
+                <span>Add Contact</span>
               </button>
             </div>
           </div>
