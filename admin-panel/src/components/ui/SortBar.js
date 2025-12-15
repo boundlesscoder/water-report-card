@@ -126,15 +126,15 @@ export default function SortBar({
           <div className="relative">
             <Listbox.Button
               onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-            >
-              <span className="font-medium">{fieldName}</span>
-              {displayValue && (
-                <>
-                  <span className="text-gray-400">:</span>
-                  <span className="text-gray-600">{displayValue}</span>
-                </>
-              )}
+        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+      >
+        <span className="font-medium">{fieldName}</span>
+        {displayValue && (
+          <>
+            <span className="text-gray-400">:</span>
+            <span className="text-gray-600">{displayValue}</span>
+          </>
+        )}
               <ChevronDownIcon className="w-4 h-4 text-gray-500" />
             </Listbox.Button>
 
@@ -148,7 +148,7 @@ export default function SortBar({
               <Listbox.Options className="absolute z-50 mt-1 w-48 max-h-60 overflow-auto bg-white border border-gray-300 rounded-md shadow-lg focus:outline-none">
                 {options.length === 0 ? (
                   <div className="px-4 py-2 text-sm text-gray-500">No options available</div>
-                ) : (
+        ) : (
                   options.map((option, index) => (
                     <Listbox.Option
                       key={index}
@@ -162,7 +162,7 @@ export default function SortBar({
                       {String(option)}
                     </Listbox.Option>
                   ))
-                )}
+        )}
               </Listbox.Options>
             </Transition>
           </div>

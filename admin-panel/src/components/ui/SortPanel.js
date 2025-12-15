@@ -42,12 +42,12 @@ export default function SortPanel({
   // All fields from searchConfig for the "Add Sort" dropdown (all fields are sortable)
   const allConfigFields = useMemo(() => {
     return searchConfig.map(field => ({
-      id: field.id,
-      name: field.name,
+        id: field.id,
+        name: field.name,
       label: field.name, // Use name as label
       value: field.id,
-      type: field.type || 'text'
-    }));
+        type: field.type || 'text'
+      }));
   }, [searchConfig]);
 
   // Get fields that can be added (not already sorted)
@@ -143,7 +143,7 @@ export default function SortPanel({
     
     // Insert at new position
     tempSorts.splice(finalInsertIndex, 0, draggedSort);
-    
+
     // Check if the entire order is valid
     return isValidOrder(tempSorts);
   }, [sorts, draggedSortId, isValidOrder]);
@@ -279,26 +279,26 @@ export default function SortPanel({
 
       {/* Sort Bars */}
       <div className="p-4">
-        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
           {/* Sort Bars */}
-          {sorts.map((sort, index) => {
-            const selectedField = getSelectedField(sort);
-            const searchForThisField = activeSearches.find(s => s.fieldId === sort.fieldId);
-            const searchValue = searchForThisField?.value || '';
+            {sorts.map((sort, index) => {
+              const selectedField = getSelectedField(sort);
+              const searchForThisField = activeSearches.find(s => s.fieldId === sort.fieldId);
+              const searchValue = searchForThisField?.value || '';
             const dropdownOptions = getDropdownOptions ? getDropdownOptions(sort.fieldId) : [];
-            
-            return (
-              <SortBar
-                key={sort.id}
-                id={sort.id}
-                selectedField={selectedField}
-                searchValue={searchValue}
+              
+              return (
+                <SortBar
+                  key={sort.id}
+                  id={sort.id}
+                  selectedField={selectedField}
+                  searchValue={searchValue}
                 dropdownOptions={dropdownOptions}
                 selectedValue={sort.selectedValue}
                 onValueSelect={handleValueSelect}
-                onRemove={handleRemoveSort}
-                removable={!sort.isAutoAdded}
-                isAutoAdded={sort.isAutoAdded || false}
+                  onRemove={handleRemoveSort}
+                  removable={!sort.isAutoAdded}
+                  isAutoAdded={sort.isAutoAdded || false}
                 draggable={true}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
@@ -307,55 +307,55 @@ export default function SortPanel({
                 onDrop={handleDrop}
                 isDragging={draggedSortId === sort.id}
                 isInvalidDropTarget={invalidDropTarget === sort.id}
-              />
-            );
-          })}
+                />
+              );
+            })}
 
           {/* Plus Button - Always at the end */}
-          {showAddButton && sorts.length < maxSorts && addableFields.length > 0 && (
-            <div className="relative">
-              <Listbox value={null} onChange={handleAddSortFromField}>
-                {({ open }) => (
-                  <>
-                    <Listbox.Button
-                      className="flex items-center justify-center w-10 h-10 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors border border-blue-200"
-                      title="Add sort"
-                    >
-                      <PlusIcon className="w-6 h-6" />
-                    </Listbox.Button>
-
-                    <Transition
-                      show={open}
-                      as={Fragment}
-                      leave="transition ease-in duration-100"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
-                    >
-                      <Listbox.Options
-                        static
-                        className="absolute left-0 mt-1 w-48 max-h-60 overflow-auto bg-white border border-gray-300 rounded-md shadow-lg focus:outline-none z-50"
+            {showAddButton && sorts.length < maxSorts && addableFields.length > 0 && (
+              <div className="relative">
+                <Listbox value={null} onChange={handleAddSortFromField}>
+                  {({ open }) => (
+                    <>
+                      <Listbox.Button
+                        className="flex items-center justify-center w-10 h-10 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors border border-blue-200"
+                        title="Add sort"
                       >
-                        {addableFields.map((field) => (
-                          <Listbox.Option
-                            key={field.id}
-                            value={field}
-                            className={({ active }) =>
-                              `cursor-pointer select-none px-4 py-2 text-sm ${
-                                active ? 'bg-blue-50 text-blue-900' : 'text-gray-900'
-                              }`
-                            }
-                          >
-                            {field.name}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </Transition>
-                  </>
-                )}
-              </Listbox>
-            </div>
-          )}
-        </div>
+                        <PlusIcon className="w-6 h-6" />
+                      </Listbox.Button>
+
+                      <Transition
+                        show={open}
+                        as={Fragment}
+                        leave="transition ease-in duration-100"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                      >
+                        <Listbox.Options
+                          static
+                          className="absolute left-0 mt-1 w-48 max-h-60 overflow-auto bg-white border border-gray-300 rounded-md shadow-lg focus:outline-none z-50"
+                        >
+                          {addableFields.map((field) => (
+                            <Listbox.Option
+                              key={field.id}
+                              value={field}
+                              className={({ active }) =>
+                                `cursor-pointer select-none px-4 py-2 text-sm ${
+                                  active ? 'bg-blue-50 text-blue-900' : 'text-gray-900'
+                                }`
+                              }
+                            >
+                              {field.name}
+                            </Listbox.Option>
+                          ))}
+                        </Listbox.Options>
+                      </Transition>
+                    </>
+                  )}
+                </Listbox>
+              </div>
+            )}
+          </div>
 
       </div>
     </div>

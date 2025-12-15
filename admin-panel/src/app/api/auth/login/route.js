@@ -5,9 +5,26 @@ export async function POST(request) {
     const { email, password } = await request.json();
 
     // Call your real backend API
-    // Backend endpoint is /auth/login (not /api/auth/login)
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://69.16.254.46:2018'}/auth/login`;
-    console.log('Attempting login to:', backendUrl);
+    // In development: use /auth/login (direct backend on localhost)
+    // In production: use /api/auth/login (through nginx proxy)
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // Determine base URL and path based on environment
+    let baseUrl;
+    let authPath;
+    
+    if (isDevelopment) {
+      // Development: always use localhost directly, ignore NEXT_PUBLIC_API_URL
+      baseUrl = 'http://localhost:2018';
+      authPath = '/auth/login';
+    } else {
+      // Production: use public URL with /api/ prefix (nginx will proxy to backend)
+      baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://waterreportcard.com';
+      authPath = '/api/auth/login';
+    }
+    
+    const backendUrl = `${baseUrl}${authPath}`;
+    console.log('Attempting login to:', backendUrl, 'NODE_ENV:', process.env.NODE_ENV);
     
     const backendResponse = await fetch(backendUrl, {
       method: 'POST',

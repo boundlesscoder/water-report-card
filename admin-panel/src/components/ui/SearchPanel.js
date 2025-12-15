@@ -180,11 +180,11 @@ export default function SearchPanel({
       </div>
 
       {/* Info Text */}
-      {searches.length === 0 && (
+      {/*{searches.length === 0 && (
         <div className="px-4 py-3 text-center text-sm text-gray-500">
-          No search bars. Click "Add Search" to get started.
+          No search bars. Click Add Search to get started.
         </div>
-      )}
+      )}*/}
     </div>
   );
 }

@@ -988,7 +988,8 @@ export default function ContactManagement() {
             const newContact = {
               ...updatedContact,
               id: `contact-${Date.now()}-${Math.random()}`,
-              parent_id: modalType === 'sub' ? (updatedContact.parent_id || null) : null
+              // parent_id is already set correctly in ContactDetailModal handleSave
+              parent_id: updatedContact.parent_id !== undefined ? updatedContact.parent_id : (modalType === 'sub' ? null : null)
             };
             setAllContacts(prev => [...prev, newContact]);
           } else {
@@ -1000,9 +1001,9 @@ export default function ContactManagement() {
             );
             setSelectedContact(updatedContact);
           }
-          // Close modal after save
-          setIsModalOpen(false);
-          setSelectedContact(null);
+          // Refresh filtered contacts by updating state
+          // The processedData will automatically update based on allContacts
+          // Modal will handle closing itself after showing success message
         }}
         onEditSubContact={(subContact) => {
           setSelectedContact(subContact);
@@ -1037,6 +1038,16 @@ export default function ContactManagement() {
           setModalMode('add');
           setModalType('sub');
           setIsModalOpen(true);
+        }}
+        onImportSubContacts={(importedSubContacts) => {
+          // Add all imported sub-contacts to allContacts
+          const newSubContacts = importedSubContacts.map(subContact => ({
+            ...subContact,
+            id: subContact.id || `contact-${Date.now()}-${Math.random()}`
+          }));
+          setAllContacts(prev => [...prev, ...newSubContacts]);
+          setIsModalOpen(false);
+          setSelectedContact(null);
         }}
       />
     </DashboardLayout>
