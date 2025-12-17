@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { PlusIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import SearchBar from './SearchBar';
 
@@ -29,13 +29,23 @@ export default function SearchPanel({
   lastActiveSearchId = null,
   showAddButton = true,
   maxSearches = 5,
+  schemaList = [],
+  // Template props
+  templates = [],
+  selectedTemplate = null,
+  onTemplateSelect = null,
+  onSave = null,
+  onSaveAs = null,
   className = ''
 }) {
-  const [searches, setSearches] = useState(activeSearches.length > 0 
-    ? activeSearches 
-    : [{ id: `search-${Date.now()}`, fieldId: searchConfig[0]?.id || '', value: '' }]
-  );
+  const [searches, setSearches] = useState(activeSearches);
   const [activeSearchId, setActiveSearchId] = useState(null);
+  const [showSchemaList, setShowSchemaList] = useState(false);
+
+  // Update searches when activeSearches prop changes
+  useEffect(() => {
+    setSearches(activeSearches);
+  }, [activeSearches]);
 
   // Generate field options from search config
   const fieldOptions = useMemo(() => {
@@ -48,20 +58,32 @@ export default function SearchPanel({
     }));
   }, [searchConfig]);
 
-  // Handle adding a new search bar
-  const handleAddSearch = useCallback(() => {
+  // Handle adding a new search bar from schema
+  const handleAddSearchFromSchema = useCallback((fieldId) => {
     if (searches.length >= maxSearches) return;
+    
+    // Check if this field is already in searches
+    if (searches.some(s => s.fieldId === fieldId)) {
+      setShowSchemaList(false);
+      return;
+    }
     
     const newSearch = {
       id: `search-${Date.now()}-${Math.random()}`,
-      fieldId: searchConfig[0]?.id || '',
+      fieldId: fieldId,
       value: ''
     };
     
     const updatedSearches = [...searches, newSearch];
     setSearches(updatedSearches);
     onSearchChange?.(updatedSearches);
-  }, [searches, maxSearches, searchConfig, onSearchChange]);
+    setShowSchemaList(false);
+  }, [searches, maxSearches, onSearchChange]);
+
+  // Handle showing schema list
+  const handleShowSchemaList = useCallback(() => {
+    setShowSchemaList(true);
+  }, []);
 
   // Handle removing a search bar
   const handleRemoveSearch = useCallback((searchId) => {
@@ -145,7 +167,7 @@ export default function SearchPanel({
           )}
           {showAddButton && searches.length < maxSearches && (
             <button
-              onClick={handleAddSearch}
+              onClick={handleShowSchemaList}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
             >
               <PlusIcon className="w-4 h-4" />
@@ -157,27 +179,86 @@ export default function SearchPanel({
 
       {/* Search Bars */}
       <div className="p-4 space-y-3">
-        {searches.map((search, index) => {
-          const selectedField = getSelectedField(search);
-          const fieldConfig = searchConfig.find(f => f.id === search.fieldId);
-          
-          return (
-            <div key={search.id}>
-              <SearchBar
-                id={search.id}
-                value={search.value}
-                onChange={(value) => handleValueChange(search.id, value)}
-                selectedField={selectedField}
-                valueOptions={fieldConfig?.valueOptions || []}
-                placeholder={fieldConfig?.placeholder || `Search by ${selectedField?.label || 'field'}...`}
-                hasAllOption={fieldConfig?.hasAllOption || false}
-                isActive={lastActiveSearchId === search.id || activeSearchId === search.id}
-                onFocus={handleSearchFocus}
-              />
+        {searches.length === 0 && !showSchemaList ? (
+          // Show only plus button when no searches
+          <div className="flex justify-center">
+            <button
+              onClick={handleShowSchemaList}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+            >
+              <PlusIcon className="w-4 h-4" />
+              Add Search Field
+            </button>
+          </div>
+        ) : showSchemaList ? (
+          // Show schema list when plus button is clicked
+          <div className="space-y-2">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-medium text-gray-700">Select Field</h4>
+              <button
+                onClick={() => setShowSchemaList(false)}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
             </div>
-          );
-        })}
+            <div className="max-h-64 overflow-y-auto space-y-1">
+              {(schemaList.length > 0 ? schemaList : searchConfig).map((field) => {
+                const isAlreadyAdded = searches.some(s => s.fieldId === field.id);
+                return (
+                  <button
+                    key={field.id}
+                    onClick={() => !isAlreadyAdded && handleAddSearchFromSchema(field.id)}
+                    disabled={isAlreadyAdded}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
+                      isAlreadyAdded
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-gray-50 hover:bg-blue-50 hover:text-blue-700 text-gray-700'
+                    }`}
+                  >
+                    {field.name || field.label || field.id}
+                    {isAlreadyAdded && <span className="ml-2 text-xs">(added)</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          // Show search bars
+          <>
+            {searches.map((search, index) => {
+              const selectedField = getSelectedField(search);
+              const fieldConfig = searchConfig.find(f => f.id === search.fieldId);
+              
+              return (
+                <div key={search.id}>
+                  <SearchBar
+                    id={search.id}
+                    value={search.value}
+                    onChange={(value) => handleValueChange(search.id, value)}
+                    selectedField={selectedField}
+                    valueOptions={fieldConfig?.valueOptions || []}
+                    placeholder={fieldConfig?.placeholder || `Search by ${selectedField?.label || 'field'}...`}
+                    hasAllOption={fieldConfig?.hasAllOption || false}
+                    isActive={lastActiveSearchId === search.id || activeSearchId === search.id}
+                    onFocus={handleSearchFocus}
+                  />
+                </div>
+              );
+            })}
+            {showAddButton && searches.length < maxSearches && (
+              <button
+                onClick={handleShowSchemaList}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+              >
+                <PlusIcon className="w-4 h-4" />
+                Add Search Field
+              </button>
+            )}
+          </>
+        )}
       </div>
+
 
       {/* Info Text */}
       {/*{searches.length === 0 && (

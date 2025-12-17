@@ -16,6 +16,8 @@ import adminCrudRoutes from './routes/admin-crud-routes.js';
 import adminBusinessRoutes from './routes/admin-business-routes.js';
 import customerRoutes from './routes/customer-routes.js';
 import invitationRoutes from './routes/invitation-routes.js';
+import contactsRoutes from './modules/contacts/contacts.routes.js';
+import searchRoutes from './modules/search/search.routes.js';
 import { setRequestContext } from './middleware/auth-middleware.js';
 
 dotenv.config();
@@ -71,6 +73,8 @@ app.use('/admin', adminCrudRoutes);
 app.use('/admin/business', adminBusinessRoutes);
 app.use('/customers', customerRoutes);
 app.use('/invitations', invitationRoutes);
+app.use('/api/contacts', contactsRoutes);
+app.use('/api/search', searchRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

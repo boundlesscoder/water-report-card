@@ -33,6 +33,7 @@ export async function authMiddleware(req, res, next) {
     
     // Attach user info to request
     req.user = {
+      id: result.user.id, // Alias for compatibility
       user_id: result.user.id,
       email: result.user.email,
       first_name: result.user.first_name,

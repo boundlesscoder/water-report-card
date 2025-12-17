@@ -19,19 +19,24 @@ import {
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import SearchPanel from '../../../components/ui/SearchPanel';
+import TemplatePanel from '../../../components/ui/TemplatePanel';
 import SortPanel from '../../../components/ui/SortPanel';
 import SearchableDataTable from '../../../components/ui/SearchableDataTable';
 import HierarchicalContactView from '../../../components/ui/HierarchicalContactView';
 import ContactDetailModal from '../../../components/ui/ContactDetailModal';
 import ContactMapView from '../../../components/mapview/ContactMapView';
 import { contactConfig } from '../../../config/searchConfig';
-import contactData from './contact-data.json';
+import api from '../../../services/api';
+import { useUser } from '../../../context/UserContext';
 
 export default function ContactManagement() {
-  // Load data from JSON file
+  const { user } = useUser();
+  
+  // Load data from backend API
   const [allContacts, setAllContacts] = useState([]);
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
@@ -39,14 +44,16 @@ export default function ContactManagement() {
   const [modalMode, setModalMode] = useState('edit'); // 'add' or 'edit'
   const [modalType, setModalType] = useState('parent'); // 'parent' or 'sub'
 
-  // Search and Sort state - Initialize with all search bars from config
-  const [activeSearches, setActiveSearches] = useState(() => {
-    return contactConfig.map((config, index) => ({
-      id: `search-${config.id}-${index}`,
-      fieldId: config.id,
-      value: ''
-    }));
-  });
+  // Search schema and template state
+  const [searchSchema, setSearchSchema] = useState(null);
+  const [searchSchemaList, setSearchSchemaList] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+
+  // Search and Sort state - Initialize empty, will be populated from schema or template
+  const [activeSearches, setActiveSearches] = useState([]);
   const [activeSorts, setActiveSorts] = useState([]);
   const [activeSortId, setActiveSortId] = useState(null); // Track which sort bar is currently active
   const [lastActiveSearchId, setLastActiveSearchId] = useState(null); // Track which searchbar was last selected
@@ -64,36 +71,87 @@ export default function ContactManagement() {
     hasNext: false
   });
 
-  // Initialize data from JSON
-  useEffect(() => {
+  // Fetch contacts from backend API
+  const fetchContacts = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      // Transform contact data to match the expected format
-      const transformedData = contactData.map(contact => ({
-        ...contact,
-        // Map contact_status to status for consistency
-        status: contact.contact_status || contact.status,
-        // Map location_name to location
-        location: contact.location_name || contact.location,
-        // Map category_description to category
-        category: contact.category_description || contact.category,
-        // Map is_liquos_account to is_liquoslabs_account
-        is_liquoslabs_account: contact.is_liquos_account || false
-      }));
-      setAllContacts(transformedData);
-      setFilteredContacts(transformedData);
-      setPagination(prev => ({
-        ...prev,
-        total: transformedData.length,
-        totalPages: Math.ceil(transformedData.length / prev.limit),
-        hasNext: transformedData.length > prev.limit
-      }));
-    } catch (error) {
-      // Error loading contact data - handle silently or log to error tracking service
+      const params = new URLSearchParams({
+        page: pagination.page,
+        limit: pagination.limit
+      });
+
+      const response = await api.get(`/api/contacts?${params}`);
+      
+      if (response.data?.success) {
+        const contacts = response.data.data?.items || [];
+        setAllContacts(contacts);
+        setFilteredContacts(contacts);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.data?.total || 0,
+          totalPages: Math.ceil((response.data.data?.total || 0) / prev.limit),
+          hasNext: (response.data.data?.page || 1) * prev.limit < (response.data.data?.total || 0)
+        }));
+      } else {
+        throw new Error(response.data?.message || 'Failed to fetch contacts');
+      }
+    } catch (err) {
+      console.error('Error fetching contacts:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load contacts');
     } finally {
       setLoading(false);
     }
+  }, [pagination.page, pagination.limit]);
+
+  // Fetch search schema
+  const fetchSearchSchema = useCallback(async () => {
+    try {
+      const response = await api.get('/api/search/schemas/contacts');
+      if (response.data?.success) {
+        setSearchSchema(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching search schema:', err);
+    }
   }, []);
+
+  // Fetch search schema list (for showing available fields)
+  const fetchSearchSchemaList = useCallback(async () => {
+    try {
+      const response = await api.get('/api/search/schemas/contacts/all');
+      if (response.data?.success && response.data.data?.length > 0) {
+        // Get the latest active schema
+        const activeSchema = response.data.data.find(s => s.is_active) || response.data.data[0];
+        if (activeSchema?.schema) {
+          setSearchSchemaList(activeSchema.schema);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching search schema list:', err);
+    }
+  }, []);
+
+  // Fetch templates
+  const fetchTemplates = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const response = await api.get('/api/search/templates/contacts');
+      if (response.data?.success) {
+        setTemplates(response.data.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching templates:', err);
+    }
+  }, [user?.id]);
+
+  // Initialize data
+  useEffect(() => {
+    fetchContacts();
+    fetchSearchSchema();
+    fetchSearchSchemaList();
+    fetchTemplates();
+  }, [fetchContacts, fetchSearchSchema, fetchSearchSchemaList, fetchTemplates]);
 
   // Extract unique values for any field from contact data
   const getUniqueValues = useCallback((fieldId, dataSource = allContacts) => {
@@ -173,10 +231,15 @@ export default function ContactManagement() {
     return data;
   }, [allContacts, activeSearches]);
 
-  // Get search config from config file with dynamic valueOptions for all fields
+  // Get search config from backend schema or fallback to contactConfig
   // valueOptions are updated based on filtered data (searched records)
   const searchConfig = useMemo(() => {
-    return contactConfig.map(config => {
+    // Use schema from backend if available, otherwise use contactConfig
+    const baseConfig = searchSchemaList && searchSchemaList.length > 0 
+      ? searchSchemaList 
+      : contactConfig;
+    
+    return baseConfig.map(config => {
       // Get unique values for this field from filtered data (if searches exist) or all data
       const dataSource = filteredDataForDropdowns.length < allContacts.length 
         ? filteredDataForDropdowns 
@@ -185,17 +248,223 @@ export default function ContactManagement() {
       
       return {
         id: config.id,
-        name: config.name,
-        label: config.name, // Use name as label
+        name: config.name || config.label,
+        label: config.name || config.label, // Use name as label
         type: config.type || 'text',
-        placeholder: config.placeholder || `Search by ${config.name}...`,
+        placeholder: config.placeholder || `Search by ${config.name || config.label}...`,
         valueOptions: uniqueValues, // Unique values from filtered/searched records
         options: config.options || [],
-        sortable: true, // All fields are sortable by default
-        hasAllOption: true // All fields have "Show all" option by default
+        sortable: config.sortable !== false, // All fields are sortable by default
+        hasAllOption: config.hasAllOption !== false // All fields have "Show all" option by default
       };
     });
-  }, [contactConfig, getUniqueValues, filteredDataForDropdowns, allContacts]);
+  }, [searchSchemaList, contactConfig, getUniqueValues, filteredDataForDropdowns, allContacts]);
+
+  // Field name mapping: template field names -> frontend field IDs
+  const mapTemplateFieldToFrontend = useCallback((templateField) => {
+    const fieldMap = {
+      'contact_name': 'name',
+      'location_name': 'location',
+      'category_description': 'category_description', // Keep as is
+      'region': 'region',
+      'state': 'state',
+      'city': 'city',
+      'service_zone': 'service_zone',
+      'route': 'route',
+      'water_district': 'pwsid',
+      'is_liquoslabs_account': 'is_liquoslabs_account'
+    };
+    return fieldMap[templateField] || templateField;
+  }, []);
+
+  // Field name mapping: frontend field IDs -> template field names
+  const mapFrontendFieldToTemplate = useCallback((frontendField) => {
+    const fieldMap = {
+      'name': 'contact_name',
+      'location': 'location_name',
+      'category_description': 'category_description',
+      'region': 'region',
+      'state': 'state',
+      'city': 'city',
+      'service_zone': 'service_zone',
+      'route': 'route',
+      'pwsid': 'water_district',
+      'is_liquoslabs_account': 'is_liquoslabs_account'
+    };
+    return fieldMap[frontendField] || frontendField;
+  }, []);
+
+  // Load template
+  const loadTemplate = useCallback(async (templateId) => {
+    try {
+      const response = await api.get(`/api/search/template/${templateId}`);
+      if (response.data?.success && response.data.data) {
+        const template = response.data.data;
+        if (template.search_payload) {
+          // Parse search_payload
+          const payload = typeof template.search_payload === 'string' 
+            ? JSON.parse(template.search_payload) 
+            : template.search_payload;
+          
+          // Transform filters to activeSearches
+          // Format: filters: { fieldName: [values] } -> activeSearches: [{id, fieldId, value}]
+          const searches = [];
+          if (payload.filters && typeof payload.filters === 'object') {
+            Object.entries(payload.filters).forEach(([templateField, values]) => {
+              if (Array.isArray(values) && values.length > 0) {
+                // Map template field name to frontend field ID
+                const fieldId = mapTemplateFieldToFrontend(templateField);
+                // Use the first value (or handle multiple values if needed)
+                const value = values[0];
+                searches.push({
+                  id: `search-${Date.now()}-${Math.random()}-${fieldId}`,
+                  fieldId: fieldId,
+                  value: String(value)
+                });
+              }
+            });
+          }
+          // Also check for legacy format (payload.searches)
+          if (payload.searches && Array.isArray(payload.searches) && searches.length === 0) {
+            searches.push(...payload.searches);
+          }
+          
+          setActiveSearches(searches);
+          
+          // Transform sort to activeSorts
+          // Format: sort: [{field, direction}] -> activeSorts: [{id, fieldId, direction}]
+          const sorts = [];
+          if (payload.sort && Array.isArray(payload.sort)) {
+            payload.sort.forEach((sortItem, index) => {
+              if (sortItem.field && sortItem.direction) {
+                // Map template field name to frontend field ID
+                const fieldId = mapTemplateFieldToFrontend(sortItem.field);
+                sorts.push({
+                  id: `sort-${Date.now()}-${Math.random()}-${fieldId}-${index}`,
+                  fieldId: fieldId,
+                  direction: sortItem.direction, // 'asc' or 'desc'
+                  selectedValue: null,
+                  isAutoAdded: false
+                });
+              }
+            });
+          }
+          // Also check for legacy format (payload.sorts)
+          else if (payload.sorts && Array.isArray(payload.sorts)) {
+            sorts.push(...payload.sorts);
+          }
+          setActiveSorts(sorts);
+          
+          // Handle groupBy if needed (store separately for future use)
+          // For now, groupBy is handled by the hierarchical view logic
+          
+          // Set selected template
+          setSelectedTemplate(template);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading template:', err);
+    }
+  }, [mapTemplateFieldToFrontend]);
+
+  // Save template
+  const saveTemplate = useCallback(async (name, isUpdate = false) => {
+    if (!user?.id) return;
+    
+    try {
+      // Transform activeSearches to filters format
+      // Format: activeSearches: [{id, fieldId, value}] -> filters: { fieldName: [values] }
+      const filters = {};
+      activeSearches.forEach(search => {
+        if (search.fieldId && search.value && search.value.trim() !== '' && search.value.toLowerCase() !== 'show all') {
+          // Map frontend field ID to template field name
+          const templateField = mapFrontendFieldToTemplate(search.fieldId);
+          if (!filters[templateField]) {
+            filters[templateField] = [];
+          }
+          filters[templateField].push(search.value);
+        }
+      });
+      
+      // Transform activeSorts to sort format
+      // Format: activeSorts: [{id, fieldId, direction}] -> sort: [{field, direction}]
+      const sort = activeSorts
+        .filter(s => s.fieldId && s.direction)
+        .map(s => ({
+          field: mapFrontendFieldToTemplate(s.fieldId), // Map to template field name
+          direction: s.direction
+        }));
+      
+      // Extract groupBy from activeSorts (fields that are sorted)
+      // Map frontend field IDs to template field names
+      const groupBy = activeSorts
+        .filter(s => s.fieldId)
+        .map(s => mapFrontendFieldToTemplate(s.fieldId));
+      
+      const payload = {
+        filters,
+        sort,
+        groupBy
+      };
+
+      if (isUpdate && selectedTemplate) {
+        // Update existing template
+        const response = await api.put(`/api/search/templates/${selectedTemplate.id}`, {
+          name: name || selectedTemplate.name,
+          search_payload: payload
+        });
+        if (response.data?.success) {
+          await fetchTemplates();
+          setShowTemplateModal(false);
+          setTemplateName('');
+        }
+      } else {
+        // Create new template
+        const response = await api.post('/api/search/templates', {
+          module: 'contacts',
+          name,
+          search_payload: payload,
+          is_default: false,
+          is_shared: false
+        });
+        if (response.data?.success) {
+          await fetchTemplates();
+          setSelectedTemplate(response.data.data);
+          setShowTemplateModal(false);
+          setTemplateName('');
+        }
+      }
+    } catch (err) {
+      console.error('Error saving template:', err);
+    }
+  }, [user?.id, activeSearches, activeSorts, selectedTemplate, fetchTemplates, mapFrontendFieldToTemplate]);
+
+  // Handle save button click
+  const handleSave = useCallback(() => {
+    if (selectedTemplate) {
+      // Update existing template
+      saveTemplate(selectedTemplate.name, true);
+    } else {
+      // Show create template modal
+      setShowTemplateModal(true);
+    }
+  }, [selectedTemplate, saveTemplate]);
+
+  // Handle save as button click
+  const handleSaveAs = useCallback(() => {
+    setShowTemplateModal(true);
+  }, []);
+
+  // Handle template selection
+  const handleTemplateSelect = useCallback((templateId) => {
+    if (templateId) {
+      loadTemplate(templateId);
+    } else {
+      setSelectedTemplate(null);
+      setActiveSearches([]);
+      setActiveSorts([]);
+    }
+  }, [loadTemplate]);
 
   // Table columns configuration based on contact data structure
   const columns = useMemo(() => [
@@ -751,15 +1020,26 @@ export default function ContactManagement() {
                 </button>
               </div>
               
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 <SearchPanel
                   searchConfig={searchConfig}
                   activeSearches={activeSearches}
                   onSearchChange={handleSearchChange}
                   onSearchFocus={handleSearchFocus}
                   lastActiveSearchId={lastActiveSearchId}
-                  maxSearches={searchConfig.length} // Show all search bars from config
-                  showAddButton={false} // Hide add button since all search bars are shown
+                  maxSearches={searchConfig.length}
+                  showAddButton={true} // Show add button to add search bars from schema
+                  schemaList={searchSchemaList} // Pass schema list for plus button dropdown
+                  className="border-0 shadow-none"
+                />
+                
+                {/* Separate Template Panel */}
+                <TemplatePanel
+                  templates={templates}
+                  selectedTemplate={selectedTemplate}
+                  onTemplateSelect={handleTemplateSelect}
+                  onSave={handleSave}
+                  onSaveAs={handleSaveAs}
                   className="border-0 shadow-none"
                 />
               </div>
@@ -1050,6 +1330,43 @@ export default function ContactManagement() {
           setSelectedContact(null);
         }}
       />
+
+      {/* Template Modal */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-semibold mb-4">Save Template</h3>
+            <input
+              type="text"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="Template name"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowTemplateModal(false);
+                  setTemplateName('');
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (templateName.trim()) {
+                    saveTemplate(templateName, false);
+                  }
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
