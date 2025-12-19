@@ -13,6 +13,8 @@ router.get('/:id', controller.getContact);
 router.post('/', controller.createContact);
 router.put('/:id', controller.updateContact);
 router.delete('/:id', controller.deleteContact);
+router.post('/dropdown-options', controller.getDropdownOptions);
+router.post('/search', controller.getContactsBySearch);
 
 // ============= LOCATIONS =============
 router.get('/locations', controller.listLocations);

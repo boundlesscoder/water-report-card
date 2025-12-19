@@ -97,6 +97,42 @@ export async function deleteContact(req, res) {
   }
 }
 
+// Get dropdown options for search bars
+export async function getDropdownOptions(req, res) {
+  try {
+    const { searches = [], fieldId } = req.body;
+    
+    // searches format: [{fieldId: string, value: string}, ...]
+    // fieldId: the field we want dropdown options for (exclude this from filtering)
+    
+    if (!fieldId) {
+      return res.status(400).json({ success: false, message: 'fieldId is required' });
+    }
+
+    const options = await service.getDropdownOptionsService(searches, fieldId);
+    res.json({ success: true, data: options });
+  } catch (error) {
+    console.error('getDropdownOptions error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to get dropdown options' });
+  }
+}
+
+// Get contacts filtered by search conditions
+export async function getContactsBySearch(req, res) {
+  try {
+    const { searches = [], sorts = [], page = 1, limit = 50 } = req.body;
+    
+    // searches format: [{fieldId: string, value: string}, ...]
+    // sorts format: [{fieldId: string, direction: 'asc'|'desc'}, ...]
+    
+    const result = await service.getContactsBySearchService(searches, sorts, page, limit);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('getContactsBySearch error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to get contacts' });
+  }
+}
+
 // ============= LOCATIONS =============
 
 export async function listLocations(req, res) {

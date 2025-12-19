@@ -10,7 +10,7 @@ export function useFeatureHover(map, setHoveredFeatureProps, setHoveredFeatureId
 
             const feature = e.features?.[0];
             if (feature) {
-                const pwsid = feature.properties.pwsid;
+                const pwsid = feature.properties.PWSID;
             
                 // 🟡 Skip if hovering the already selected feature
                 if (pwsid === selectedFeatureId) {
@@ -24,7 +24,8 @@ export function useFeatureHover(map, setHoveredFeatureProps, setHoveredFeatureId
             
                 ["water_districts_selected", "water_districts_selected_outline"].forEach((layerId) => {
                     if (map.getLayer(layerId)) {
-                        map.setFilter(layerId, ["==", ["get", "pwsid"], pwsid]);
+                        // Try both PWSID and pwsid for compatibility
+                        map.setFilter(layerId, ["==", ["get", "PWSID"], pwsid]);
                     }
                 });
             } else {
@@ -35,13 +36,13 @@ export function useFeatureHover(map, setHoveredFeatureProps, setHoveredFeatureId
                 if (selectedFeatureId) {
                     ["water_districts_selected", "water_districts_selected_outline"].forEach((layerId) => {
                         if (map.getLayer(layerId)) {
-                            map.setFilter(layerId, ["==", ["get", "pwsid"], selectedFeatureId]);
+                            map.setFilter(layerId, ["==", ["get", "PWSID"], selectedFeatureId]);
                         }
                     });
                 } else {
                     ["water_districts_selected", "water_districts_selected_outline"].forEach((layerId) => {
                         if (map.getLayer(layerId)) {
-                            map.setFilter(layerId, ["==", ["get", "pwsid"], ""]);
+                            map.setFilter(layerId, ["==", ["get", "PWSID"], ""]);
                         }
                     });
                 }

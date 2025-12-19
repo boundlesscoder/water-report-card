@@ -3,69 +3,103 @@
 export const CONTACT_QUERIES = {
   // Contacts
   LIST_CONTACTS: `
-    SELECT 
-      c.*,
+    SELECT DISTINCT ON (c.id)
+      c.id,
+      c.contact_name as name,
+      c.parent_id,
+      c.main_phone_number as phone,
+      c.category_description,
+      -- Location fields
       l.id as location_id,
       l.name as location_name,
-      l.branch,
-      l.location_type,
-      l.status as location_status,
       l.region,
+      l.cached_state as state,
+      l.cached_postal_code as zip,
+      l.cached_city as city,
       l.service_zone,
-      l.route_code,
-      a.line1 as address_line1,
-      a.line2 as address_line2,
-      a.city,
-      a.state,
-      a.postal_code,
-      a.country,
-      a.latitude,
-      a.longitude,
-      a.pwsid,
+      l.route_code as route,
+      -- Physical address (from location.address_id)
+      a_physical.line1 as physical_address,
+      a_physical.country,
+      a_physical.pwsid,
+      -- Shipping address (from location.shipping_address_id)
+      a_shipping.line1 as shipping_address,
+      a_shipping.city as shipping_city,
+      a_shipping.state as shipping_state,
+      a_shipping.postal_code as shipping_zip,
+      a_shipping.country as shipping_country,
+      -- Billing information
       b.id as billing_id,
-      b.name as billing_name,
-      b.contact_name as billing_contact_name,
-      b.email as billing_email,
+      b.email,
+      b.contact_type,
+      COALESCE(l.status, 'active') as contact_status,
+      -- Billing address (from billing_information.address_id)
+      a_billing.line1 as billing_address,
+      a_billing.city as billing_city,
+      a_billing.state as billing_state,
+      a_billing.postal_code as billing_zip,
+      a_billing.country as billing_country,
       parent.contact_name as parent_contact_name
+      -- Note: is_liquos_account field not included - add if it exists in wrc_contacts table
     FROM public.wrc_contacts c
-    LEFT JOIN public.wrc_locations l ON l.contact_id = c.id
-    LEFT JOIN public.wrc_addresses a ON a.id = l.address_id
-    LEFT JOIN public.wrc_billing_information b ON b.id = c.billing_id
+    LEFT JOIN public.wrc_locations l ON l.id = c.location_id AND l.status = 'active'
+    LEFT JOIN public.wrc_addresses a_physical ON a_physical.id = l.address_id
+    LEFT JOIN public.wrc_addresses a_shipping ON a_shipping.id = l.shipping_address_id
+    LEFT JOIN public.wrc_billing_information b ON b.id = c.billing_id AND b.is_active = true
+    LEFT JOIN public.wrc_addresses a_billing ON a_billing.id = b.address_id
     LEFT JOIN public.wrc_contacts parent ON parent.id = c.parent_id
     WHERE 1=1
+    ORDER BY c.id, l.created_at ASC
   `,
   
   GET_CONTACT_BY_ID: `
     SELECT 
-      c.*,
+      c.id,
+      c.contact_name as name,
+      c.parent_id,
+      c.main_phone_number as phone,
+      c.category_description,
+      -- Location fields
       l.id as location_id,
       l.name as location_name,
-      l.branch,
-      l.location_type,
-      l.status as location_status,
       l.region,
+      l.cached_state as state,
+      l.cached_postal_code as zip,
+      l.cached_city as city,
       l.service_zone,
-      l.route_code,
-      a.line1 as address_line1,
-      a.line2 as address_line2,
-      a.city,
-      a.state,
-      a.postal_code,
-      a.country,
-      a.latitude,
-      a.longitude,
-      a.pwsid,
+      l.route_code as route,
+      -- Physical address (from location.address_id)
+      a_physical.line1 as physical_address,
+      a_physical.country,
+      a_physical.pwsid,
+      -- Shipping address (from location.shipping_address_id)
+      a_shipping.line1 as shipping_address,
+      a_shipping.city as shipping_city,
+      a_shipping.state as shipping_state,
+      a_shipping.postal_code as shipping_zip,
+      a_shipping.country as shipping_country,
+      -- Billing information
       b.id as billing_id,
-      b.name as billing_name,
-      b.contact_name as billing_contact_name,
-      b.email as billing_email,
+      b.email,
+      b.contact_type,
+      COALESCE(l.status, 'active') as contact_status,
+      -- Billing address (from billing_information.address_id)
+      a_billing.line1 as billing_address,
+      a_billing.city as billing_city,
+      a_billing.state as billing_state,
+      a_billing.postal_code as billing_zip,
+      a_billing.country as billing_country,
       parent.contact_name as parent_contact_name
     FROM public.wrc_contacts c
-    LEFT JOIN public.wrc_locations l ON l.contact_id = c.id
-    LEFT JOIN public.wrc_addresses a ON a.id = l.address_id
-    LEFT JOIN public.wrc_billing_information b ON b.id = c.billing_id
+    LEFT JOIN public.wrc_locations l ON l.id = c.location_id AND l.status = 'active'
+    LEFT JOIN public.wrc_addresses a_physical ON a_physical.id = l.address_id
+    LEFT JOIN public.wrc_addresses a_shipping ON a_shipping.id = l.shipping_address_id
+    LEFT JOIN public.wrc_billing_information b ON b.id = c.billing_id AND b.is_active = true
+    LEFT JOIN public.wrc_addresses a_billing ON a_billing.id = b.address_id
     LEFT JOIN public.wrc_contacts parent ON parent.id = c.parent_id
     WHERE c.id = $1
+    ORDER BY l.created_at ASC
+    LIMIT 1
   `,
   
   CREATE_CONTACT: `
@@ -126,7 +160,7 @@ export const CONTACT_QUERIES = {
       building.building_name,
       b.name as billing_name
     FROM public.wrc_locations l
-    LEFT JOIN public.wrc_contacts c ON c.id = l.contact_id
+    LEFT JOIN public.wrc_contacts c ON c.location_id = l.id
     LEFT JOIN public.wrc_addresses a ON a.id = l.address_id
     LEFT JOIN public.wrc_campuses campus ON campus.id = l.campus_id
     LEFT JOIN public.wrc_buildings building ON building.id = l.building_id
@@ -152,7 +186,7 @@ export const CONTACT_QUERIES = {
       building.building_name,
       b.name as billing_name
     FROM public.wrc_locations l
-    LEFT JOIN public.wrc_contacts c ON c.id = l.contact_id
+    LEFT JOIN public.wrc_contacts c ON c.location_id = l.id
     LEFT JOIN public.wrc_addresses a ON a.id = l.address_id
     LEFT JOIN public.wrc_campuses campus ON campus.id = l.campus_id
     LEFT JOIN public.wrc_buildings building ON building.id = l.building_id
@@ -162,34 +196,33 @@ export const CONTACT_QUERIES = {
   
   CREATE_LOCATION: `
     INSERT INTO public.wrc_locations (
-      contact_id, campus_id, building_id, name, branch, location_type,
+      campus_id, building_id, name, branch, location_type,
       status, address_id, shipping_address_id, cached_city, cached_state,
       cached_postal_code, region, service_zone, route_code, billing_id, geom
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
     ) RETURNING *
   `,
   
   UPDATE_LOCATION: `
     UPDATE public.wrc_locations
     SET 
-      contact_id = COALESCE($2, contact_id),
-      campus_id = $3,
-      building_id = $4,
-      name = COALESCE($5, name),
-      branch = $6,
-      location_type = $7,
-      status = COALESCE($8, status),
-      address_id = $9,
-      shipping_address_id = $10,
-      cached_city = $11,
-      cached_state = $12,
-      cached_postal_code = $13,
-      region = $14,
-      service_zone = $15,
-      route_code = $16,
-      billing_id = $17,
-      geom = $18,
+      campus_id = $2,
+      building_id = $3,
+      name = COALESCE($4, name),
+      branch = $5,
+      location_type = $6,
+      status = COALESCE($7, status),
+      address_id = $8,
+      shipping_address_id = $9,
+      cached_city = $10,
+      cached_state = $11,
+      cached_postal_code = $12,
+      region = $13,
+      service_zone = $14,
+      route_code = $15,
+      billing_id = $16,
+      geom = $17,
       updated_at = now()
     WHERE id = $1
     RETURNING *
@@ -256,39 +289,37 @@ export const CONTACT_QUERIES = {
       c.contact_name,
       l.name as location_name
     FROM public.wrc_billing_information b
-    LEFT JOIN public.wrc_contacts c ON c.id = b.contact_id
-    LEFT JOIN public.wrc_locations l ON l.id = b.location_id
+    LEFT JOIN public.wrc_contacts c ON c.billing_id = b.id
+    LEFT JOIN public.wrc_locations l ON l.id = c.location_id
     WHERE b.id = $1
   `,
   
   CREATE_BILLING_INFO: `
     INSERT INTO public.wrc_billing_information (
-      contact_id, location_id, name, contact_type, department,
+      name, contact_type, department,
       contact_name, email, contact_note, address_id,
       contacts_sales_tax, discount_rate, hourly_labor_rate,
       is_default, is_active
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
     ) RETURNING *
   `,
   
   UPDATE_BILLING_INFO: `
     UPDATE public.wrc_billing_information
     SET 
-      contact_id = COALESCE($2, contact_id),
-      location_id = $3,
-      name = $4,
-      contact_type = $5,
-      department = $6,
-      contact_name = $7,
-      email = $8,
-      contact_note = $9,
-      address_id = $10,
-      contacts_sales_tax = $11,
-      discount_rate = $12,
-      hourly_labor_rate = $13,
-      is_default = COALESCE($14, is_default),
-      is_active = COALESCE($15, is_active),
+      name = $2,
+      contact_type = $3,
+      department = $4,
+      contact_name = $5,
+      email = $6,
+      contact_note = $7,
+      address_id = $8,
+      contacts_sales_tax = $9,
+      discount_rate = $10,
+      hourly_labor_rate = $11,
+      is_default = COALESCE($12, is_default),
+      is_active = COALESCE($13, is_active),
       updated_at = now()
     WHERE id = $1
     RETURNING *

@@ -14,7 +14,7 @@ export function useFeatureClick(map, setSelectedFeatureProps, setIsClicked, setS
             const feature = features?.[0];
 
             if (feature) {
-                const pwsid = feature.properties.pwsid;
+                const pwsid = feature.properties.PWSID;
                 setSelectedFeatureProps(feature.properties);
                 setSelectedFeatureId(pwsid);       // ✅ Track selected ID
                 setIsClicked(true);

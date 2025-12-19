@@ -56,6 +56,16 @@ export async function deleteContactService(id) {
   return contact;
 }
 
+// Get dropdown options for a specific field, filtered by other search conditions
+export async function getDropdownOptionsService(searches = [], fieldId) {
+  return await repository.getDropdownOptionsRepository(searches, fieldId);
+}
+
+// Get contacts filtered by search conditions and sorted
+export async function getContactsBySearchService(searches = [], sorts = [], page = 1, limit = 50) {
+  return await repository.getContactsBySearchRepository(searches, sorts, page, limit);
+}
+
 // ============= LOCATIONS =============
 
 export async function listLocationsService(filters = {}) {
@@ -70,9 +80,6 @@ export async function getLocationByIdService(id) {
 }
 
 export async function createLocationService(data) {
-  if (!data.contact_id) {
-    throw new Error('Contact ID is required for location');
-  }
   if (!data.name) {
     throw new Error('Location name is required');
   }
@@ -158,10 +165,6 @@ export async function getBillingInfoByIdService(id) {
 }
 
 export async function createBillingInfoService(data) {
-  if (!data.contact_id) {
-    throw new Error('Contact ID is required for billing information');
-  }
-
   return await repository.createBillingInfoRepository(data);
 }
 

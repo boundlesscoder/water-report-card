@@ -18,6 +18,7 @@ import customerRoutes from './routes/customer-routes.js';
 import invitationRoutes from './routes/invitation-routes.js';
 import contactsRoutes from './modules/contacts/contacts.routes.js';
 import searchRoutes from './modules/search/search.routes.js';
+import waterQualityReportsRoutes from './routes/water-quality-reports-routes.js';
 import { setRequestContext } from './middleware/auth-middleware.js';
 
 dotenv.config();
@@ -75,6 +76,7 @@ app.use('/customers', customerRoutes);
 app.use('/invitations', invitationRoutes);
 app.use('/api/contacts', contactsRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/water-quality-reports', waterQualityReportsRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
