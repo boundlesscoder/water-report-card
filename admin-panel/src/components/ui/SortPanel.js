@@ -5,6 +5,71 @@ import { PlusIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { Listbox, Transition } from '@headlessui/react';
 import SortBar from './SortBar';
 
+// Component to handle async loading of dropdown options for sort bars
+function SortBarWithOptions({
+  sort,
+  selectedField,
+  searchValue,
+  getDropdownOptions,
+  activeSearches,
+  onValueSelect,
+  onRemove,
+  removable,
+  isAutoAdded,
+  draggable,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  isDragging,
+  isInvalidDropTarget
+}) {
+  const [valueOptions, setValueOptions] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+
+  // Load options when sort bar field changes or when other searches change
+  useEffect(() => {
+    if (getDropdownOptions && selectedField) {
+      setLoadingOptions(true);
+      const loadOptions = async () => {
+        try {
+          const options = await getDropdownOptions(sort.fieldId);
+          setValueOptions(options);
+        } catch (error) {
+          console.error('Error loading dropdown options:', error);
+          setValueOptions([]);
+        } finally {
+          setLoadingOptions(false);
+        }
+      };
+      loadOptions();
+    }
+  }, [getDropdownOptions, sort.fieldId, selectedField, activeSearches]);
+
+  return (
+    <SortBar
+      id={sort.id}
+      selectedField={selectedField}
+      searchValue={searchValue}
+      dropdownOptions={valueOptions}
+      selectedValue={sort.selectedValue}
+      onValueSelect={onValueSelect}
+      onRemove={onRemove}
+      removable={removable}
+      isAutoAdded={isAutoAdded}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      isDragging={isDragging}
+      isInvalidDropTarget={isInvalidDropTarget}
+    />
+  );
+}
+
 /**
  * SortPanel Component
  * A flexible sort panel with drag-and-drop reordering
@@ -63,6 +128,7 @@ export default function SortPanel({
     const newSort = {
       id: `sort-${Date.now()}-${Math.random()}`,
       fieldId: field.id,
+      direction: 'asc', // Default direction
       selectedValue: null, // No value selected initially
       isAutoAdded: false // Mark as manually added
     };
@@ -285,28 +351,27 @@ export default function SortPanel({
               const selectedField = getSelectedField(sort);
               const searchForThisField = activeSearches.find(s => s.fieldId === sort.fieldId);
               const searchValue = searchForThisField?.value || '';
-            const dropdownOptions = getDropdownOptions ? getDropdownOptions(sort.fieldId) : [];
               
               return (
-                <SortBar
+                <SortBarWithOptions
                   key={sort.id}
-                  id={sort.id}
+                  sort={sort}
                   selectedField={selectedField}
                   searchValue={searchValue}
-                dropdownOptions={dropdownOptions}
-                selectedValue={sort.selectedValue}
-                onValueSelect={handleValueSelect}
+                  getDropdownOptions={getDropdownOptions}
+                  activeSearches={activeSearches}
+                  onValueSelect={handleValueSelect}
                   onRemove={handleRemoveSort}
                   removable={!sort.isAutoAdded}
                   isAutoAdded={sort.isAutoAdded || false}
-                draggable={true}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                isDragging={draggedSortId === sort.id}
-                isInvalidDropTarget={invalidDropTarget === sort.id}
+                  draggable={true}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  isDragging={draggedSortId === sort.id}
+                  isInvalidDropTarget={invalidDropTarget === sort.id}
                 />
               );
             })}

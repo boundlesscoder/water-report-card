@@ -11,13 +11,15 @@ export default function AddressAutocomplete({
   placeholder = "Type address or select from suggestions...",
   className = "",
   label,
-  required = false
+  required = false,
+  autoFocus = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchValue, setSearchValue] = useState(value || '');
   const [hasSelected, setHasSelected] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -33,7 +35,8 @@ export default function AddressAutocomplete({
       return;
     }
 
-    if (!searchValue || searchValue.length < 3) {
+    // Only search if input is focused and user has typed at least 3 characters
+    if (!isFocused || !searchValue || searchValue.length < 3) {
       setSuggestions([]);
       setIsOpen(false);
       return;
@@ -92,7 +95,7 @@ export default function AddressAutocomplete({
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [searchValue, hasSelected]);
+  }, [searchValue, hasSelected, isFocused]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -111,6 +114,18 @@ export default function AddressAutocomplete({
     setHasSelected(false); // Reset selection flag when user manually types
     setSearchValue(newValue);
     onChange(newValue);
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    // Delay blur to allow click events on suggestions to fire first
+    setTimeout(() => {
+      setIsFocused(false);
+      setIsOpen(false);
+    }, 200);
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -185,10 +200,14 @@ export default function AddressAutocomplete({
           type="text"
           value={searchValue}
           onChange={handleInputChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          autoComplete="off"
           className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${className}`}
           required={required}
+          {...(autoFocus !== false ? { autoFocus: autoFocus } : {})}
         />
         
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -201,7 +220,7 @@ export default function AddressAutocomplete({
       </div>
 
       {/* Suggestions Dropdown */}
-      {isOpen && suggestions.length > 0 && (
+      {isOpen && isFocused && suggestions.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {suggestions.map((suggestion, index) => (
             <button
@@ -235,7 +254,7 @@ export default function AddressAutocomplete({
       )}
 
       {/* No results message */}
-      {!loading && searchValue.length >= 3 && suggestions.length === 0 && !hasSelected && (
+      {isFocused && !loading && searchValue.length >= 3 && suggestions.length === 0 && !hasSelected && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
           <div className="px-4 py-3 text-sm text-gray-500 text-center">
             <div className="flex items-center justify-center gap-2">
@@ -250,7 +269,7 @@ export default function AddressAutocomplete({
       )}
 
       {/* Helpful message for short input */}
-      {!loading && searchValue.length > 0 && searchValue.length < 3 && !hasSelected && (
+      {isFocused && !loading && searchValue.length > 0 && searchValue.length < 3 && !hasSelected && (
         <div className="absolute z-50 w-full mt-1 bg-blue-50 border border-blue-200 rounded-lg shadow-lg">
           <div className="px-4 py-3 text-sm text-blue-700 text-center">
             <div className="flex items-center justify-center gap-2">

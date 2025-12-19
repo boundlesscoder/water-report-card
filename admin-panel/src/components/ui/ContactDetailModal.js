@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   XMarkIcon, 
   ChevronDownIcon, 
@@ -33,6 +33,8 @@ export default function ContactDetailModal({
   const [editedContact, setEditedContact] = useState({});
   const [employees, setEmployees] = useState([]);
   const [sameAsLocationAddress, setSameAsLocationAddress] = useState(false);
+  const [sameAsParentShippingAddress, setSameAsParentShippingAddress] = useState(false);
+  const [sameAsParentBillingAddress, setSameAsParentBillingAddress] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     contactInfo: true, // Default expanded
     locationAddress: false,
@@ -43,6 +45,9 @@ export default function ContactDetailModal({
   });
   const [warningMessage, setWarningMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const locationCityInputRef = useRef(null);
+  const shippingCityInputRef = useRef(null);
+  const billingCityInputRef = useRef(null);
 
   // Extract unique contact types and organize hierarchically (similar to SearchBar)
   const { contactTypesFlat, contactTypesHierarchical } = useMemo(() => {
@@ -149,19 +154,33 @@ export default function ContactDetailModal({
         billing_state: '',
         billing_zip: '',
         billing_country: '',
-        hours_of_operation_start: '',
-        hours_of_operation_end: '',
-        days_of_operation_start: '',
-        days_of_operation_end: '',
-        service_zone: '',
-        route: '',
-        pwsid: '',
+        main_phone_number: '',
+        security_access_instructions: '',
+        parking_requirements: '',
+        point_contact_primary: '',
+        point_contact_secondary: '',
+        is_cert_of_insurance_on_file: false,
         parent_id: type === 'sub' ? (contact?.parent_id || null) : undefined
       });
       setEmployees([]);
       setSameAsLocationAddress(false);
+      setSameAsParentShippingAddress(false);
+      setSameAsParentBillingAddress(false);
     } else if (contact) {
-      setEditedContact({ ...contact });
+      // Ensure all address fields are properly initialized
+      setEditedContact({
+        ...contact,
+        // Ensure shipping address fields exist
+        shipping_city: contact.shipping_city || '',
+        shipping_state: contact.shipping_state || '',
+        shipping_zip: contact.shipping_zip || '',
+        shipping_country: contact.shipping_country || '',
+        // Ensure billing address fields exist
+        billing_city: contact.billing_city || '',
+        billing_state: contact.billing_state || '',
+        billing_zip: contact.billing_zip || '',
+        billing_country: contact.billing_country || ''
+      });
       // Parse hours and days if they exist
       if (contact.hours_of_operation) {
         const hoursMatch = contact.hours_of_operation.match(/(\d{1,2}:\d{2}\s*(?:AM|PM))\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM))/i);
@@ -196,8 +215,29 @@ export default function ContactDetailModal({
           contact.shipping_zip === contact.zip) {
         setSameAsLocationAddress(true);
       }
+      
+      // For sub-contacts, check if addresses match parent
+      if (type === 'sub' && contact.parent_id) {
+        const parentContact = allContacts.find(c => c.id === contact.parent_id);
+        if (parentContact) {
+          // Check if shipping address matches parent shipping address
+          if (contact.shipping_address === parentContact.shipping_address &&
+              contact.shipping_city === parentContact.shipping_city &&
+              contact.shipping_state === parentContact.shipping_state &&
+              contact.shipping_zip === parentContact.shipping_zip) {
+            setSameAsParentShippingAddress(true);
+          }
+          // Check if billing address matches parent billing address
+          if (contact.billing_address === parentContact.billing_address &&
+              contact.billing_city === parentContact.billing_city &&
+              contact.billing_state === parentContact.billing_state &&
+              contact.billing_zip === parentContact.billing_zip) {
+            setSameAsParentBillingAddress(true);
+          }
+        }
+      }
     }
-  }, [contact, mode, type]);
+  }, [contact, mode, type, allContacts]);
 
   // Update shipping address when "Same as Location Address" is checked
   useEffect(() => {
@@ -211,7 +251,47 @@ export default function ContactDetailModal({
         shipping_country: prev.country || ''
       }));
     }
-  }, [sameAsLocationAddress, editedContact.physical_address, editedContact.city, editedContact.state, editedContact.zip, editedContact.country]);
+    // Only run this effect when sameAsLocationAddress changes, not when other fields change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sameAsLocationAddress]);
+
+  // Get parent contact for sub-contacts
+  const parentContact = useMemo(() => {
+    if (type === 'sub' && editedContact.parent_id) {
+      return allContacts.find(c => c.id === editedContact.parent_id);
+    }
+    return null;
+  }, [type, editedContact.parent_id, allContacts]);
+
+  // Update shipping address when "Same as Parent Shipping Address" is checked (for sub-contacts)
+  useEffect(() => {
+    if (sameAsParentShippingAddress && parentContact) {
+      setEditedContact(prev => ({
+        ...prev,
+        shipping_address: parentContact.shipping_address || '',
+        shipping_city: parentContact.shipping_city || '',
+        shipping_state: parentContact.shipping_state || '',
+        shipping_zip: parentContact.shipping_zip || '',
+        shipping_country: parentContact.shipping_country || ''
+      }));
+    }
+  }, [sameAsParentShippingAddress, parentContact]);
+
+  // Update billing address when "Same as Parent Billing Address" is checked (for sub-contacts)
+  useEffect(() => {
+    if (sameAsParentBillingAddress && parentContact) {
+      setEditedContact(prev => ({
+        ...prev,
+        billing_address: parentContact.billing_address || '',
+        billing_city: parentContact.billing_city || '',
+        billing_state: parentContact.billing_state || '',
+        billing_zip: parentContact.billing_zip || '',
+        billing_country: parentContact.billing_country || ''
+      }));
+    }
+    // Only run this effect when sameAsParentBillingAddress or parentContact changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sameAsParentBillingAddress, parentContact?.id]);
 
   if (!isOpen) return null;
 
@@ -258,13 +338,8 @@ export default function ContactDetailModal({
                editedContact.billing_zip &&
                editedContact.billing_country;
       case 'maintenanceManagement':
-        return editedContact.hours_of_operation_start &&
-               editedContact.hours_of_operation_end &&
-               editedContact.days_of_operation_start &&
-               editedContact.days_of_operation_end &&
-               editedContact.service_zone &&
-               editedContact.route &&
-               editedContact.pwsid;
+        // All fields are optional for maintenance management
+        return true;
       case 'employees':
         return employees.length === 0 || employees.every(emp => 
           emp.name && 
@@ -496,8 +571,26 @@ export default function ContactDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs"
+      onClick={(e) => {
+        // Prevent clicks inside modal from propagating
+        e.stopPropagation();
+      }}
+      onKeyDown={(e) => {
+        // Prevent keyboard events from propagating
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+        }
+      }}
+    >
+      <div 
+        className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col"
+        onClick={(e) => {
+          // Stop propagation of clicks inside modal content
+          e.stopPropagation();
+        }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900">{getModalTitle()}</h2>
@@ -788,7 +881,7 @@ export default function ContactDetailModal({
               </button>
               {expandedSections.locationAddress && (
                 <div className="px-4 pb-4 space-y-3">
-                  <div>
+                  <div onClick={(e) => e.stopPropagation()}>
                     <AddressAutocomplete
                       label="Address"
                       value={editedContact.physical_address || ''}
@@ -796,16 +889,22 @@ export default function ContactDetailModal({
                       onAddressSelect={handleLocationAddressSelect}
                       placeholder="Type address or select from suggestions..."
                       className="w-full"
+                      autoFocus={false}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">City</label>
                       <input
+                        ref={locationCityInputRef}
                         type="text"
                         value={editedContact.city || ''}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('city', e.target.value);
+                        }}
                         placeholder="Enter city"
+                        autoComplete="off"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -814,20 +913,28 @@ export default function ContactDetailModal({
                       <input
                         type="text"
                         value={editedContact.state || ''}
-                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('state', e.target.value);
+                        }}
                         placeholder="Enter state"
+                        autoComplete="off"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">ZIP Code</label>
                       <input
                         type="text"
                         value={editedContact.zip || ''}
-                        onChange={(e) => handleInputChange('zip', e.target.value)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('zip', e.target.value);
+                        }}
                         placeholder="Enter ZIP code"
+                        autoComplete="off"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -836,8 +943,12 @@ export default function ContactDetailModal({
                       <input
                         type="text"
                         value={editedContact.country || ''}
-                        onChange={(e) => handleInputChange('country', e.target.value)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('country', e.target.value);
+                        }}
                         placeholder="Enter country"
+                        autoComplete="off"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -870,29 +981,46 @@ export default function ContactDetailModal({
               </button>
               {expandedSections.shippingAddress && (
                 <div className="px-4 pb-4 space-y-3">
-                  <div className="flex items-center gap-2 mb-3">
-                    <input
-                      type="checkbox"
-                      id="sameAsLocation"
-                      checked={sameAsLocationAddress}
-                      onChange={(e) => setSameAsLocationAddress(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="sameAsLocation" className="text-sm font-medium text-gray-700">
-                      Same as Location Address
-                    </label>
+                  <div className="flex flex-row items-center gap-4 mb-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="sameAsLocation"
+                        checked={sameAsLocationAddress}
+                        onChange={(e) => {
+                          setSameAsLocationAddress(e.target.checked);
+                          if (e.target.checked) {
+                            setSameAsParentShippingAddress(false);
+                          }
+                        }}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="sameAsLocation" className="text-sm font-medium text-gray-700">
+                        Same as Location Address
+                      </label>
+                    </div>
+                    {type === 'sub' && (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="sameAsParentShipping"
+                          checked={sameAsParentShippingAddress}
+                          onChange={(e) => {
+                            setSameAsParentShippingAddress(e.target.checked);
+                            if (e.target.checked) {
+                              setSameAsLocationAddress(false);
+                            }
+                          }}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="sameAsParentShipping" className="text-sm font-medium text-gray-700">
+                          Same as Parent Shipping Address
+                        </label>
+                      </div>
+                    )}
                   </div>
                   <div>
-                    {!sameAsLocationAddress ? (
-                      <AddressAutocomplete
-                        label="Address"
-                        value={editedContact.shipping_address || ''}
-                        onChange={(value) => handleInputChange('shipping_address', value)}
-                        onAddressSelect={handleShippingAddressSelect}
-                        placeholder="Type address or select from suggestions..."
-                        className="w-full"
-                      />
-                    ) : (
+                    {sameAsLocationAddress ? (
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Address</label>
                         <input
@@ -903,19 +1031,59 @@ export default function ContactDetailModal({
                           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
                         />
                       </div>
+                    ) : sameAsParentShippingAddress && parentContact ? (
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">Address</label>
+                        <input
+                          type="text"
+                          value={parentContact.shipping_address || ''}
+                          placeholder="Same as Parent Shipping Address"
+                          disabled={true}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                        />
+                      </div>
+                    ) : (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <AddressAutocomplete
+                          label="Address"
+                          value={editedContact.shipping_address || ''}
+                          onChange={(value) => handleInputChange('shipping_address', value)}
+                          onAddressSelect={handleShippingAddressSelect}
+                          placeholder="Type address or select from suggestions..."
+                          className="w-full"
+                          autoFocus={false}
+                        />
+                      </div>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">City</label>
                       <input
+                        ref={shippingCityInputRef}
                         type="text"
-                        value={sameAsLocationAddress ? (editedContact.city || '') : (editedContact.shipping_city || '')}
-                        onChange={(e) => handleInputChange('shipping_city', e.target.value)}
-                        placeholder={sameAsLocationAddress ? "Same as Location Address" : "Enter city"}
-                        disabled={sameAsLocationAddress}
+                        value={
+                          sameAsLocationAddress 
+                            ? (editedContact.city || '') 
+                            : sameAsParentShippingAddress && parentContact
+                            ? (parentContact.shipping_city || '')
+                            : (editedContact.shipping_city || '')
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('shipping_city', e.target.value);
+                        }}
+                        placeholder={
+                          sameAsLocationAddress 
+                            ? "Same as Location Address" 
+                            : sameAsParentShippingAddress
+                            ? "Same as Parent Shipping Address"
+                            : "Enter city"
+                        }
+                        disabled={sameAsLocationAddress || sameAsParentShippingAddress}
+                        autoComplete="off"
                         className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          sameAsLocationAddress ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                          (sameAsLocationAddress || sameAsParentShippingAddress) ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                         }`}
                       />
                     </div>
@@ -923,12 +1091,28 @@ export default function ContactDetailModal({
                       <label className="block text-sm text-gray-600 mb-1">State</label>
                       <input
                         type="text"
-                        value={sameAsLocationAddress ? (editedContact.state || '') : (editedContact.shipping_state || '')}
-                        onChange={(e) => handleInputChange('shipping_state', e.target.value)}
-                        placeholder={sameAsLocationAddress ? "Same as Location Address" : "Enter state"}
-                        disabled={sameAsLocationAddress}
+                        value={
+                          sameAsLocationAddress 
+                            ? (editedContact.state || '') 
+                            : sameAsParentShippingAddress && parentContact
+                            ? (parentContact.shipping_state || '')
+                            : (editedContact.shipping_state || '')
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('shipping_state', e.target.value);
+                        }}
+                        placeholder={
+                          sameAsLocationAddress 
+                            ? "Same as Location Address" 
+                            : sameAsParentShippingAddress
+                            ? "Same as Parent Shipping Address"
+                            : "Enter state"
+                        }
+                        disabled={sameAsLocationAddress || sameAsParentShippingAddress}
+                        autoComplete="off"
                         className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          sameAsLocationAddress ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                          (sameAsLocationAddress || sameAsParentShippingAddress) ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                         }`}
                       />
                     </div>
@@ -938,12 +1122,28 @@ export default function ContactDetailModal({
                       <label className="block text-sm text-gray-600 mb-1">ZIP Code</label>
                       <input
                         type="text"
-                        value={sameAsLocationAddress ? (editedContact.zip || '') : (editedContact.shipping_zip || '')}
-                        onChange={(e) => handleInputChange('shipping_zip', e.target.value)}
-                        placeholder={sameAsLocationAddress ? "Same as Location Address" : "Enter ZIP code"}
-                        disabled={sameAsLocationAddress}
+                        value={
+                          sameAsLocationAddress 
+                            ? (editedContact.zip || '') 
+                            : sameAsParentShippingAddress && parentContact
+                            ? (parentContact.shipping_zip || '')
+                            : (editedContact.shipping_zip || '')
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('shipping_zip', e.target.value);
+                        }}
+                        placeholder={
+                          sameAsLocationAddress 
+                            ? "Same as Location Address" 
+                            : sameAsParentShippingAddress
+                            ? "Same as Parent Shipping Address"
+                            : "Enter ZIP code"
+                        }
+                        disabled={sameAsLocationAddress || sameAsParentShippingAddress}
+                        autoComplete="off"
                         className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          sameAsLocationAddress ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                          (sameAsLocationAddress || sameAsParentShippingAddress) ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                         }`}
                       />
                     </div>
@@ -951,12 +1151,28 @@ export default function ContactDetailModal({
                       <label className="block text-sm text-gray-600 mb-1">Country</label>
                       <input
                         type="text"
-                        value={sameAsLocationAddress ? (editedContact.country || '') : (editedContact.shipping_country || '')}
-                        onChange={(e) => handleInputChange('shipping_country', e.target.value)}
-                        placeholder={sameAsLocationAddress ? "Same as Location Address" : "Enter country"}
-                        disabled={sameAsLocationAddress}
+                        value={
+                          sameAsLocationAddress 
+                            ? (editedContact.country || '') 
+                            : sameAsParentShippingAddress && parentContact
+                            ? (parentContact.shipping_country || '')
+                            : (editedContact.shipping_country || '')
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('shipping_country', e.target.value);
+                        }}
+                        placeholder={
+                          sameAsLocationAddress 
+                            ? "Same as Location Address" 
+                            : sameAsParentShippingAddress
+                            ? "Same as Parent Shipping Address"
+                            : "Enter country"
+                        }
+                        disabled={sameAsLocationAddress || sameAsParentShippingAddress}
+                        autoComplete="off"
                         className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          sameAsLocationAddress ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                          (sameAsLocationAddress || sameAsParentShippingAddress) ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                         }`}
                       />
                     </div>
@@ -989,35 +1205,88 @@ export default function ContactDetailModal({
               </button>
               {expandedSections.billingAddress && (
                 <div className="px-4 pb-4 space-y-3">
+                  {type === 'sub' && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <input
+                        type="checkbox"
+                        id="sameAsParentBilling"
+                        checked={sameAsParentBillingAddress}
+                        onChange={(e) => setSameAsParentBillingAddress(e.target.checked)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="sameAsParentBilling" className="text-sm font-medium text-gray-700">
+                        Same as Parent Billing Address
+                      </label>
+                    </div>
+                  )}
                   <div>
-                    <AddressAutocomplete
-                      label="Address"
-                      value={editedContact.billing_address || ''}
-                      onChange={(value) => handleInputChange('billing_address', value)}
-                      onAddressSelect={handleBillingAddressSelect}
-                      placeholder="Type address or select from suggestions..."
-                      className="w-full"
-                    />
+                    {sameAsParentBillingAddress && parentContact ? (
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">Address</label>
+                        <input
+                          type="text"
+                          value={parentContact.billing_address || ''}
+                          placeholder="Same as Parent Billing Address"
+                          disabled={true}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                        />
+                      </div>
+                    ) : (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <AddressAutocomplete
+                          label="Address"
+                          value={editedContact.billing_address || ''}
+                          onChange={(value) => handleInputChange('billing_address', value)}
+                          onAddressSelect={handleBillingAddressSelect}
+                          placeholder="Type address or select from suggestions..."
+                          className="w-full"
+                          autoFocus={false}
+                        />
+                      </div>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">City</label>
                       <input
+                        ref={billingCityInputRef}
                         type="text"
-                        value={editedContact.billing_city || ''}
-                        onChange={(e) => handleInputChange('billing_city', e.target.value)}
-                        placeholder="Enter city"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={
+                          sameAsParentBillingAddress && parentContact
+                            ? (parentContact.billing_city || '')
+                            : (editedContact.billing_city || '')
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('billing_city', e.target.value);
+                        }}
+                        placeholder={sameAsParentBillingAddress ? "Same as Parent Billing Address" : "Enter city"}
+                        disabled={sameAsParentBillingAddress}
+                        autoComplete="off"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          sameAsParentBillingAddress ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                        }`}
                       />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">State</label>
                       <input
                         type="text"
-                        value={editedContact.billing_state || ''}
-                        onChange={(e) => handleInputChange('billing_state', e.target.value)}
-                        placeholder="Enter state"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={
+                          sameAsParentBillingAddress && parentContact
+                            ? (parentContact.billing_state || '')
+                            : (editedContact.billing_state || '')
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('billing_state', e.target.value);
+                        }}
+                        placeholder={sameAsParentBillingAddress ? "Same as Parent Billing Address" : "Enter state"}
+                        disabled={sameAsParentBillingAddress}
+                        autoComplete="off"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          sameAsParentBillingAddress ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                        }`}
                       />
                     </div>
                   </div>
@@ -1026,20 +1295,42 @@ export default function ContactDetailModal({
                       <label className="block text-sm text-gray-600 mb-1">ZIP Code</label>
                       <input
                         type="text"
-                        value={editedContact.billing_zip || ''}
-                        onChange={(e) => handleInputChange('billing_zip', e.target.value)}
-                        placeholder="Enter ZIP code"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={
+                          sameAsParentBillingAddress && parentContact
+                            ? (parentContact.billing_zip || '')
+                            : (editedContact.billing_zip || '')
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('billing_zip', e.target.value);
+                        }}
+                        placeholder={sameAsParentBillingAddress ? "Same as Parent Billing Address" : "Enter ZIP code"}
+                        disabled={sameAsParentBillingAddress}
+                        autoComplete="off"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          sameAsParentBillingAddress ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                        }`}
                       />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Country</label>
                       <input
                         type="text"
-                        value={editedContact.billing_country || ''}
-                        onChange={(e) => handleInputChange('billing_country', e.target.value)}
-                        placeholder="Enter country"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={
+                          sameAsParentBillingAddress && parentContact
+                            ? (parentContact.billing_country || '')
+                            : (editedContact.billing_country || '')
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleInputChange('billing_country', e.target.value);
+                        }}
+                        placeholder={sameAsParentBillingAddress ? "Same as Parent Billing Address" : "Enter country"}
+                        disabled={sameAsParentBillingAddress}
+                        autoComplete="off"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          sameAsParentBillingAddress ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                        }`}
                       />
                     </div>
                   </div>
@@ -1071,93 +1362,69 @@ export default function ContactDetailModal({
               </button>
               {expandedSections.maintenanceManagement && (
                 <div className="px-4 pb-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">Hours of Operation (Start)</label>
-                      <select
-                        value={editedContact.hours_of_operation_start || ''}
-                        onChange={(e) => handleInputChange('hours_of_operation_start', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Select start time</option>
-                        {timeOptions.map(time => (
-                          <option key={time} value={time}>{time}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">Hours of Operation (End)</label>
-                      <select
-                        value={editedContact.hours_of_operation_end || ''}
-                        onChange={(e) => handleInputChange('hours_of_operation_end', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Select end time</option>
-                        {timeOptions.map(time => (
-                          <option key={time} value={time}>{time}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">Days of Operation (Start)</label>
-                      <select
-                        value={editedContact.days_of_operation_start || ''}
-                        onChange={(e) => handleInputChange('days_of_operation_start', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Select start day</option>
-                        {dayOptions.map(day => (
-                          <option key={day} value={day}>{day}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">Days of Operation (End)</label>
-                      <select
-                        value={editedContact.days_of_operation_end || ''}
-                        onChange={(e) => handleInputChange('days_of_operation_end', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Select end day</option>
-                        {dayOptions.map(day => (
-                          <option key={day} value={day}>{day}</option>
-                        ))}
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Main Phone Number</label>
+                    <input
+                      type="tel"
+                      value={editedContact.main_phone_number || ''}
+                      onChange={(e) => handleInputChange('main_phone_number', e.target.value)}
+                      placeholder="Enter main phone number"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Service Zone</label>
-                    <input
-                      type="text"
-                      value={editedContact.service_zone || ''}
-                      onChange={(e) => handleInputChange('service_zone', e.target.value)}
-                      placeholder="Enter service zone"
+                    <label className="block text-sm text-gray-600 mb-1">Security Access Instructions</label>
+                    <textarea
+                      value={editedContact.security_access_instructions || ''}
+                      onChange={(e) => handleInputChange('security_access_instructions', e.target.value)}
+                      placeholder="Enter security access instructions"
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Parking Requirements</label>
+                    <textarea
+                      value={editedContact.parking_requirements || ''}
+                      onChange={(e) => handleInputChange('parking_requirements', e.target.value)}
+                      placeholder="Enter parking requirements"
+                      rows={4}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Route</label>
+                      <label className="block text-sm text-gray-600 mb-1">Point of Contact [Primary]</label>
                       <input
                         type="text"
-                        value={editedContact.route || ''}
-                        onChange={(e) => handleInputChange('route', e.target.value)}
-                        placeholder="Enter route"
+                        value={editedContact.point_contact_primary || ''}
+                        onChange={(e) => handleInputChange('point_contact_primary', e.target.value)}
+                        placeholder="Enter primary point of contact"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Water District (PWSID)</label>
+                      <label className="block text-sm text-gray-600 mb-1">Point of Contact [Secondary]</label>
                       <input
                         type="text"
-                        value={editedContact.pwsid || ''}
-                        onChange={(e) => handleInputChange('pwsid', e.target.value)}
-                        placeholder="Enter water district"
+                        value={editedContact.point_contact_secondary || ''}
+                        onChange={(e) => handleInputChange('point_contact_secondary', e.target.value)}
+                        placeholder="Enter secondary point of contact"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="certOfInsurance"
+                      checked={editedContact.is_cert_of_insurance_on_file || false}
+                      onChange={(e) => handleInputChange('is_cert_of_insurance_on_file', e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="certOfInsurance" className="text-sm font-medium text-gray-700">
+                      Certificate of Insurance .pdf on file?
+                    </label>
                   </div>
                 </div>
               )}

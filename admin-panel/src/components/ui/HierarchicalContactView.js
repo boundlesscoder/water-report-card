@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronRightIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 // HierarchicalContactView Component - Groups contacts by sortbar order
 export default function HierarchicalContactView({ 
@@ -9,6 +9,8 @@ export default function HierarchicalContactView({
   onContactSelect = null,
   hasActiveSearches = false,
   onContactDoubleClick = null,
+  onContactEdit = null, // Handler for edit button click
+  onContactDelete = null, // Handler for delete button click
   activeSearches = [],
   activeSorts = [],
   expandAll = false,
@@ -387,18 +389,40 @@ export default function HierarchicalContactView({
         <>
           {leafData.map(contact => {
             const statusColor = getStatusColor(contact.contact_status);
+            const isParent = contact.parent_id === null || contact.parent_id === undefined;
             return (
               <div
                 key={contact.id}
-                onClick={() => onContactSelect?.(contact)}
-                onDoubleClick={() => onContactDoubleClick?.(contact)}
-                className="bg-blue-50 hover:bg-blue-100 rounded-md shadow-sm flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors"
+                className="bg-blue-50 hover:bg-blue-100 rounded-md shadow-sm flex items-center gap-3 px-4 py-2 transition-colors"
                 style={{ marginLeft: `${depth * 16}px` }}
               >
-                <div className={`w-3 h-3 rounded-full ${statusColor} flex-shrink-0`} />
-                <span className="text-sm text-gray-900 flex-1">
-                  {contact.name + ' | ' + (contact.location_name || contact.location || '')}
-                </span>
+                <div 
+                  onClick={() => onContactSelect?.(contact)}
+                  onDoubleClick={() => onContactDoubleClick?.(contact)}
+                  className="flex items-center gap-3 flex-1 cursor-pointer"
+                >
+                  <div className={`w-3 h-3 rounded-full ${statusColor} flex-shrink-0`} />
+                  <span className="text-sm text-gray-900">
+                    {contact.name + ' | ' + (contact.location_name || contact.location || '')}
+                  </span>
+                </div>
+                {/* Edit and Delete Buttons */}
+                <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => onContactEdit?.(contact)}
+                    className="p-1.5 text-gray-600 hover:bg-gray-200 rounded transition-colors"
+                    title={`Edit ${isParent ? 'parent' : 'sub'}-contact`}
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => onContactDelete?.(contact)}
+                    className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title={`Delete ${isParent ? 'parent' : 'sub'}-contact`}
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -444,23 +468,57 @@ export default function HierarchicalContactView({
           const newPath = currentPath === '' ? key : `${currentPath}|${key}`;
           const isExpanded = isPathExpanded(newPath);
           const contactCount = countContacts(groupData);
+          
+          // Find parent contact when grouping by "name" field (parent contact level)
+          const isNameField = currentField === 'name';
+          let parentContact = null;
+          if (isNameField) {
+            // Find the parent contact by name
+            parentContact = allContacts.find(c => 
+              (c.parent_id === null || c.parent_id === undefined) && 
+              c.name === key
+            );
+          }
 
           return (
             <div key={key} className="space-y-2">
               {/* Group Header */}
               <div
-                onClick={() => togglePath(newPath)}
-                className="bg-white rounded-md shadow-sm border border-gray-200 flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="bg-white rounded-md shadow-sm border border-gray-200 flex items-center gap-2 px-4 py-2 hover:bg-gray-50 transition-colors"
                 style={{ marginLeft: `${depth * 16}px` }}
               >
-                {isExpanded ? (
-                  <ChevronDownIcon className="w-5 h-5 text-blue-500" />
-                ) : (
-                  <ChevronRightIcon className="w-5 h-5 text-blue-500" />
+                <div 
+                  onClick={() => togglePath(newPath)}
+                  className="flex items-center gap-2 flex-1 cursor-pointer"
+                >
+                  {isExpanded ? (
+                    <ChevronDownIcon className="w-5 h-5 text-blue-500" />
+                  ) : (
+                    <ChevronRightIcon className="w-5 h-5 text-blue-500" />
+                  )}
+                  <span className="text-sm font-medium text-gray-800">
+                    {getFieldLabel(currentField)} | {key} ({contactCount})
+                  </span>
+                </div>
+                {/* Edit and Delete Buttons for Parent Contacts (name field level) */}
+                {isNameField && parentContact && (
+                  <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => onContactEdit?.(parentContact)}
+                      className="p-1.5 text-gray-600 hover:bg-gray-200 rounded transition-colors"
+                      title="Edit parent contact"
+                    >
+                      <PencilIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onContactDelete?.(parentContact)}
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Delete parent contact"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
-                <span className="text-sm font-medium text-gray-800">
-                  {getFieldLabel(currentField)} | {key} ({contactCount})
-                </span>
               </div>
 
               {/* Nested Content */}
@@ -474,7 +532,7 @@ export default function HierarchicalContactView({
         })}
       </>
     );
-  }, [isPathExpanded, togglePath, countContacts, getFieldLabel, onContactSelect, onContactDoubleClick, getStatusColor]);
+  }, [isPathExpanded, togglePath, countContacts, getFieldLabel, onContactSelect, onContactDoubleClick, onContactEdit, onContactDelete, getStatusColor, allContacts]);
 
   // Don't show anything if there are no active searches
   if (!hasActiveSearches) {

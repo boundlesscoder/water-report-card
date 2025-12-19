@@ -1,8 +1,68 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { PlusIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, FunnelIcon, TrashIcon } from '@heroicons/react/24/outline';
 import SearchBar from './SearchBar';
+
+// Component to handle async loading of dropdown options
+function SearchBarWithOptions({
+  search,
+  selectedField,
+  fieldConfig,
+  getValueOptionsForField,
+  onValueChange,
+  onFocus,
+  onRemove,
+  isActive,
+  activeSearches // Pass active searches to trigger reload when they change
+}) {
+  const [valueOptions, setValueOptions] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+
+  // Load options when search bar is focused, when field changes, or when other searches change
+  useEffect(() => {
+    if (getValueOptionsForField && selectedField) {
+      setLoadingOptions(true);
+      const loadOptions = async () => {
+        try {
+          const options = await getValueOptionsForField(search.fieldId);
+          setValueOptions(options);
+        } catch (error) {
+          console.error('Error loading dropdown options:', error);
+          setValueOptions([]);
+        } finally {
+          setLoadingOptions(false);
+        }
+      };
+      loadOptions();
+    }
+  }, [getValueOptionsForField, search.fieldId, selectedField, isActive, activeSearches]);
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1">
+        <SearchBar
+          id={search.id}
+          value={search.value}
+          onChange={onValueChange}
+          selectedField={selectedField}
+          valueOptions={valueOptions}
+          placeholder={fieldConfig?.placeholder || `Search by ${selectedField?.label || 'field'}...`}
+          hasAllOption={fieldConfig?.hasAllOption || false}
+          isActive={isActive}
+          onFocus={onFocus}
+        />
+      </div>
+      <button
+        onClick={onRemove}
+        className="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+        title="Remove search bar"
+      >
+            <TrashIcon className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
 
 /**
  * SearchPanel Component
@@ -30,12 +90,8 @@ export default function SearchPanel({
   showAddButton = true,
   maxSearches = 5,
   schemaList = [],
-  // Template props
-  templates = [],
-  selectedTemplate = null,
-  onTemplateSelect = null,
-  onSave = null,
-  onSaveAs = null,
+  // Function to get valueOptions for a specific field (filtered by other searches)
+  getValueOptionsForField = null,
   className = ''
 }) {
   const [searches, setSearches] = useState(activeSearches);
@@ -87,8 +143,6 @@ export default function SearchPanel({
 
   // Handle removing a search bar
   const handleRemoveSearch = useCallback((searchId) => {
-    if (searches.length <= 1) return; // Keep at least one search bar
-    
     const updatedSearches = searches.filter(s => s.id !== searchId);
     setSearches(updatedSearches);
     onSearchChange?.(updatedSearches);
@@ -165,15 +219,6 @@ export default function SearchPanel({
               Clear all
             </button>
           )}
-          {showAddButton && searches.length < maxSearches && (
-            <button
-              onClick={handleShowSchemaList}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
-            >
-              <PlusIcon className="w-4 h-4" />
-              Add Search
-            </button>
-          )}
         </div>
       </div>
 
@@ -184,7 +229,7 @@ export default function SearchPanel({
           <div className="flex justify-center">
             <button
               onClick={handleShowSchemaList}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
             >
               <PlusIcon className="w-4 h-4" />
               Add Search Field
@@ -231,19 +276,18 @@ export default function SearchPanel({
               const fieldConfig = searchConfig.find(f => f.id === search.fieldId);
               
               return (
-                <div key={search.id}>
-                  <SearchBar
-                    id={search.id}
-                    value={search.value}
-                    onChange={(value) => handleValueChange(search.id, value)}
-                    selectedField={selectedField}
-                    valueOptions={fieldConfig?.valueOptions || []}
-                    placeholder={fieldConfig?.placeholder || `Search by ${selectedField?.label || 'field'}...`}
-                    hasAllOption={fieldConfig?.hasAllOption || false}
-                    isActive={lastActiveSearchId === search.id || activeSearchId === search.id}
-                    onFocus={handleSearchFocus}
-                  />
-                </div>
+                <SearchBarWithOptions
+                  key={search.id}
+                  search={search}
+                  selectedField={selectedField}
+                  fieldConfig={fieldConfig}
+                  getValueOptionsForField={getValueOptionsForField}
+                  onValueChange={(value) => handleValueChange(search.id, value)}
+                  onFocus={() => handleSearchFocus(search.id)}
+                  onRemove={() => handleRemoveSearch(search.id)}
+                  isActive={lastActiveSearchId === search.id || activeSearchId === search.id}
+                  activeSearches={searches}
+                />
               );
             })}
             {showAddButton && searches.length < maxSearches && (
@@ -258,14 +302,6 @@ export default function SearchPanel({
           </>
         )}
       </div>
-
-
-      {/* Info Text */}
-      {/*{searches.length === 0 && (
-        <div className="px-4 py-3 text-center text-sm text-gray-500">
-          No search bars. Click Add Search to get started.
-        </div>
-      )}*/}
     </div>
   );
 }
