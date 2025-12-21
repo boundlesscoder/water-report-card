@@ -12,6 +12,68 @@ export default function FeatureDetailsPanel({ featureProps, onClose, isClicked }
     const [isWrapped, setIsWrapped] = useState(false);
     const [waterQualityReports, setWaterQualityReports] = useState([]);
     const [loadingReports, setLoadingReports] = useState(false);
+    const [enhancedProps, setEnhancedProps] = useState(featureProps);
+    const [loadingDetails, setLoadingDetails] = useState(false);
+
+    // Fetch enhanced district details when PWSID is available
+    useEffect(() => {
+        const pwsid = featureProps?.PWSID || featureProps?.pwsid;
+        
+        if (!pwsid) {
+            setEnhancedProps(featureProps);
+            return;
+        }
+
+        // If we already have most details, don't fetch again
+        if (featureProps?.Address_Line1 || featureProps?.address_line1 || 
+            featureProps?.City_Served || featureProps?.city_served) {
+            setEnhancedProps(featureProps);
+            return;
+        }
+
+        const fetchDistrictDetails = async () => {
+            setLoadingDetails(true);
+            try {
+                const response = await fetch(`/api/water-quality-reports/${pwsid}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.data && data.data.length > 0) {
+                        // Merge the fetched data with existing props
+                        const districtData = data.data[0];
+                        setEnhancedProps({
+                            ...featureProps,
+                            // Map database fields to display fields
+                            Address_Line1: districtData.address_line1 || featureProps?.Address_Line1,
+                            address_line1: districtData.address_line1 || featureProps?.address_line1,
+                            City_Served: districtData.city_served || featureProps?.City_Served,
+                            city_served: districtData.city_served || featureProps?.city_served,
+                            Org_Name: districtData.org_name || featureProps?.Org_Name,
+                            org_name: districtData.org_name || featureProps?.org_name,
+                            Admin_Name: districtData.admin_name || featureProps?.Admin_Name,
+                            admin_name: districtData.admin_name || featureProps?.admin_name,
+                            Email_Addr: districtData.email_addr || featureProps?.Email_Addr,
+                            email_addr: districtData.email_addr || featureProps?.email_addr,
+                            Phone_Number: districtData.phone_number || featureProps?.Phone_Number,
+                            phone_number: districtData.phone_number || featureProps?.phone_number,
+                            System_Type: districtData.service_area_type || featureProps?.System_Type,
+                            system_type: districtData.service_area_type || featureProps?.system_type,
+                        });
+                    } else {
+                        setEnhancedProps(featureProps);
+                    }
+                } else {
+                    setEnhancedProps(featureProps);
+                }
+            } catch (error) {
+                console.error('Error fetching district details:', error);
+                setEnhancedProps(featureProps);
+            } finally {
+                setLoadingDetails(false);
+            }
+        };
+
+        fetchDistrictDetails();
+    }, [featureProps?.PWSID, featureProps?.pwsid]);
 
     // Fetch water quality reports when PWSID changes
     useEffect(() => {
@@ -67,6 +129,9 @@ export default function FeatureDetailsPanel({ featureProps, onClose, isClicked }
     // ✅ Early return *after* hooks
     if (!featureProps) return null;
 
+    // Use enhanced props if available, otherwise fall back to featureProps
+    const displayProps = enhancedProps || featureProps;
+
     return (
         <>
             <div className="absolute right-5 top-12 mt-16 flex flex-col items-end z-20">
@@ -99,18 +164,18 @@ export default function FeatureDetailsPanel({ featureProps, onClose, isClicked }
                             ref={h2Ref}
                             className="text-white font-bold text-[18px]"
                         >
-                            {featureProps.PWS_Name || featureProps.pws_name || featureProps.PWSID || "Water District"}
+                            {displayProps.PWS_Name || displayProps.pws_name || displayProps.PWSID || "Water District"}
                         </h2>
 
                         {!isWrapped && (
                             <>
                                 <div className="text-sm text-white">
                                     <span>Public Water ID :</span>{" "}
-                                    <span className="font-semibold">{featureProps.PWSID || featureProps.pwsid || "N/A"}</span>
+                                    <span className="font-semibold">{displayProps.PWSID || displayProps.pwsid || "N/A"}</span>
                                 </div>
                                 <div className="text-sm text-white">
                                     <span>Agency :</span>{" "}
-                                    <span className="font-semibold">{featureProps.Primacy_Agency || featureProps.primacy_agency || "N/A"}</span>{" "}          
+                                    <span className="font-semibold">{displayProps.Primacy_Agency || displayProps.primacy_agency || "N/A"}</span>{" "}          
                                 </div>
                             </>
                         )}
@@ -125,58 +190,58 @@ export default function FeatureDetailsPanel({ featureProps, onClose, isClicked }
                         <>
                             <li>
                                 <span>Public Water ID:</span>{" "}
-                                <span className="font-semibold">{featureProps.PWSID || featureProps.pwsid || "N/A"}</span>{" "}
+                                <span className="font-semibold">{displayProps.PWSID || displayProps.pwsid || "N/A"}</span>{" "}
                                 
                             </li>
                             <li>
                                 <span>Agency:</span>{" "}
-                                <span className="font-semibold">{featureProps.Primacy_Agency || featureProps.primacy_agency || "N/A"}</span>{" "}          
+                                <span className="font-semibold">{displayProps.Primacy_Agency || displayProps.primacy_agency || "N/A"}</span>{" "}          
                             </li>
                         </>
                     )}
                     <li>
                         <span>PWS Address:</span>{" "}
-                        <span className="font-semibold">{featureProps.Address_Line1 || featureProps.address_line1 || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.Address_Line1 || displayProps.address_line1 || "N/A"}</span>{" "}
                         
                     </li>
                     <li>
                         <span>PWS City:</span>{" "}
-                        <span className="font-semibold">{featureProps.City_Served || featureProps.city_served || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.City_Served || displayProps.city_served || "N/A"}</span>{" "}
                         
                     </li>
                     <li>
                         <span>PWS Org:</span>{" "}
-                        <span className="font-semibold">{featureProps.Org_Name || featureProps.org_name || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.Org_Name || displayProps.org_name || "N/A"}</span>{" "}
                         
                     </li>
                     <li>
                         <span>PWS Administrator:</span>{" "}
-                        <span className="font-semibold">{featureProps.Admin_Name || featureProps.admin_name || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.Admin_Name || displayProps.admin_name || "N/A"}</span>{" "}
                         
                     </li>
                     <li>
                         <span>PWS Email:</span>{" "}
-                        <span className="font-semibold">{featureProps.Email_Addr || featureProps.email_addr || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.Email_Addr || displayProps.email_addr || "N/A"}</span>{" "}
                         
                     </li>
                     <li>
                         <span>PWS Phone:</span>{" "}
-                        <span className="font-semibold">{featureProps.Phone_Number || featureProps.phone_number || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.Phone_Number || displayProps.phone_number || "N/A"}</span>{" "}
                         
                     </li>
                     <li>
                         <span>Population Served:</span>{" "}
-                        <span className="font-semibold">{featureProps.Population_Served_Count?.toLocaleString() || featureProps.pop_cat_5 || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.Population_Served_Count?.toLocaleString() || displayProps.pop_cat_5 || "N/A"}</span>{" "}
                         
                     </li>
                     <li>
                         <span>System Type:</span>{" "}
-                        <span className="font-semibold">{featureProps.System_Type || featureProps.system_type || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.System_Type || displayProps.system_type || "N/A"}</span>{" "}
                         
                     </li>
                     <li>
                         <span>Service Connections:</span>{" "}
-                        <span className="font-semibold">{featureProps.Service_Connections_Count?.toLocaleString() || featureProps.service_connections_count || "N/A"}</span>{" "}
+                        <span className="font-semibold">{displayProps.Service_Connections_Count?.toLocaleString() || displayProps.service_connections_count || "N/A"}</span>{" "}
                         
                     </li>
                 </ul>
@@ -282,7 +347,7 @@ export default function FeatureDetailsPanel({ featureProps, onClose, isClicked }
             {/* Scorecard Popup - shows automatically when water polygon is clicked */}
             {isClicked && (
                 <ScorecardPopup
-                    featureProps={featureProps}
+                    featureProps={displayProps}
                     isVisible={isClicked}
                     onClose={onClose}
                 />
