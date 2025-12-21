@@ -74,8 +74,8 @@ app.use('/admin', adminCrudRoutes);
 app.use('/admin/business', adminBusinessRoutes);
 app.use('/customers', customerRoutes);
 app.use('/invitations', invitationRoutes);
-app.use('/api/contacts', contactsRoutes);
-app.use('/api/search', searchRoutes);
+app.use('/contacts', contactsRoutes);
+app.use('/search', searchRoutes);
 app.use('/water-quality-reports', waterQualityReportsRoutes);
 
 app.listen(PORT, () => {

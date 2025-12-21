@@ -14,7 +14,7 @@ import {
   MapIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
-  ChevronRightIcon,
+  MagnifyingGlassIcon,
   CheckCircleIcon,
   XCircleIcon,
   XMarkIcon,
@@ -28,7 +28,6 @@ import SearchableDataTable from '../../../components/ui/SearchableDataTable';
 import HierarchicalContactView from '../../../components/ui/HierarchicalContactView';
 import ContactDetailModal from '../../../components/ui/ContactDetailModal';
 import ContactMapView from '../../../components/mapview/ContactMapView';
-import DeleteConfirmModal from '../../../components/ui/DeleteConfirmModal';
 import { contactConfig } from '../../../config/searchConfig';
 import api from '../../../services/api';
 import { useUser } from '../../../context/UserContext';
@@ -47,9 +46,6 @@ export default function ContactManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('edit'); // 'add' or 'edit'
   const [modalType, setModalType] = useState('parent'); // 'parent' or 'sub'
-  const [showDeleteContactModal, setShowDeleteContactModal] = useState(false);
-  const [contactToDelete, setContactToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Search schema and template state
   const [searchSchema, setSearchSchema] = useState(null);
@@ -1217,56 +1213,6 @@ export default function ContactManagement() {
 
   // Note: Pagination is now handled by SearchableDataTable component
 
-  // Handle edit contact
-  const handleEditContact = useCallback((contact) => {
-    setSelectedContact(contact);
-    setModalMode('edit');
-    setModalType(contact.parent_id !== null && contact.parent_id !== undefined ? 'sub' : 'parent');
-    setIsModalOpen(true);
-  }, []);
-
-  // Handle delete contact - show confirmation modal
-  const handleDeleteContact = useCallback((contact) => {
-    setContactToDelete(contact);
-    setShowDeleteContactModal(true);
-  }, []);
-
-  // Confirm delete contact - actually perform the delete
-  const confirmDeleteContact = useCallback(async () => {
-    if (!contactToDelete) return;
-
-    setIsDeleting(true);
-    const isParent = contactToDelete.parent_id === null || contactToDelete.parent_id === undefined;
-    const contactType = isParent ? 'parent contact' : 'sub-contact';
-
-    try {
-      // Both parent and sub-contacts use the same endpoint
-      const response = await api.delete(`/api/contacts/${contactToDelete.id}`);
-      
-      if (response.data?.success) {
-        // Remove contact from state
-        setAllContacts(prev => prev.filter(c => c.id !== contactToDelete.id));
-        // Also remove any sub-contacts if this was a parent
-        if (isParent) {
-          setAllContacts(prev => prev.filter(c => c.parent_id !== contactToDelete.id));
-        }
-        showToast(`${contactType.charAt(0).toUpperCase() + contactType.slice(1)} deleted successfully`, 'success');
-        // Refresh contacts from backend
-        await fetchContacts();
-        // Close modal and reset state
-        setShowDeleteContactModal(false);
-        setContactToDelete(null);
-      } else {
-        showToast(response.data?.message || 'Failed to delete contact', 'error');
-      }
-    } catch (err) {
-      console.error('Error deleting contact:', err);
-      showToast(err.response?.data?.message || 'Failed to delete contact', 'error');
-    } finally {
-      setIsDeleting(false);
-    }
-  }, [contactToDelete, showToast, fetchContacts]);
-
   // Render actions for each row
   const renderActions = useCallback((row) => {
     return (
@@ -1281,14 +1227,18 @@ export default function ContactManagement() {
           <EyeIcon className="w-4 h-4" />
         </button>
         <button 
-          onClick={() => handleEditContact(row)}
+          onClick={() => {
+            // Edit contact functionality
+          }}
           className="p-1.5 text-gray-600 hover:bg-gray-50 rounded transition-colors"
           title="Edit contact"
         >
           <PencilIcon className="w-4 h-4" />
         </button>
         <button 
-          onClick={() => handleDeleteContact(row)}
+          onClick={() => {
+            // Delete contact functionality
+          }}
           className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
           title="Delete contact"
         >
@@ -1296,7 +1246,7 @@ export default function ContactManagement() {
         </button>
       </div>
     );
-  }, [handleEditContact, handleDeleteContact]);
+  }, []);
 
   return (
     <DashboardLayout>
@@ -1355,7 +1305,7 @@ export default function ContactManagement() {
                   className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                   title="Expand search panel"
                 >
-                  <ChevronRightIcon className="w-5 h-5 text-gray-500" />
+                  <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
             </div>
@@ -1512,8 +1462,6 @@ export default function ContactManagement() {
                     setModalType(contact.parent_id !== null && contact.parent_id !== undefined ? 'sub' : 'parent');
                     setIsModalOpen(true);
                   }}
-                  onContactEdit={handleEditContact}
-                  onContactDelete={handleDeleteContact}
                 />
               </div>
             ) : (
@@ -1541,12 +1489,8 @@ export default function ContactManagement() {
                       }}
                       onContactDoubleClick={(contact) => {
                         setSelectedContact(contact);
-                        setModalMode('edit');
-                        setModalType(contact.parent_id !== null && contact.parent_id !== undefined ? 'sub' : 'parent');
                         setIsModalOpen(true);
                       }}
-                      onContactEdit={handleEditContact}
-                      onContactDelete={handleDeleteContact}
                     />
                 </div>
               </div>
@@ -1720,7 +1664,7 @@ export default function ContactManagement() {
         </div>
       )}
 
-      {/* Delete Template Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       {showDeleteModal && templateToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-xs">
           <div className="bg-white rounded-lg shadow-xl w-96 max-w-[90vw]">
@@ -1750,23 +1694,6 @@ export default function ContactManagement() {
           </div>
         </div>
       )}
-
-      {/* Delete Contact Confirmation Modal */}
-      <DeleteConfirmModal
-        isOpen={showDeleteContactModal}
-        onClose={() => {
-          if (!isDeleting) {
-            setShowDeleteContactModal(false);
-            setContactToDelete(null);
-          }
-        }}
-        onConfirm={confirmDeleteContact}
-        title={contactToDelete ? `Delete ${contactToDelete.parent_id === null || contactToDelete.parent_id === undefined ? 'Parent Contact' : 'Sub-Contact'}` : 'Delete Contact'}
-        message={contactToDelete ? `Are you sure you want to delete ${contactToDelete.parent_id === null || contactToDelete.parent_id === undefined ? 'parent contact' : 'sub-contact'} "${contactToDelete.name}"? This action cannot be undone.${contactToDelete.parent_id === null || contactToDelete.parent_id === undefined ? ' All associated sub-contacts will also be deleted.' : ''}` : 'Are you sure you want to delete this contact? This action cannot be undone.'}
-        confirmText="Delete"
-        cancelText="Cancel"
-        isLoading={isDeleting}
-      />
     </DashboardLayout>
   );
 }

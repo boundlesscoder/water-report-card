@@ -28,7 +28,8 @@ export default function ContactDetailModal({
   allContacts = [], 
   onEditSubContact, 
   onAddSubContact,
-  onImportSubContacts
+  onImportSubContacts,
+  onSaveRequest // New prop: called when save is requested, returns promise that resolves to {shouldClose: boolean}
 }) {
   const [editedContact, setEditedContact] = useState({});
   const [employees, setEmployees] = useState([]);
@@ -317,7 +318,7 @@ export default function ContactDetailModal({
                (!editedContact.phone || isValidPhone(editedContact.phone)) &&
                editedContact.contact_type &&
                editedContact.category_description &&
-               editedContact.location_name;
+               (type === 'parent' ? true : editedContact.location_name); // Location name not required for parent contacts
       case 'locationAddress':
         return editedContact.physical_address &&
                editedContact.city &&
@@ -463,8 +464,25 @@ export default function ContactDetailModal({
       employees: employees
     };
     
-    if (onSave) {
-      // Show success message
+    if (onSaveRequest) {
+      // Use onSaveRequest if provided (for parent contact confirmation flow)
+      onSaveRequest(contactToSave).then(({shouldClose, success}) => {
+        if (success) {
+          setSuccessMessage('Contact saved successfully!');
+          if (shouldClose) {
+            setTimeout(() => {
+              setSuccessMessage('');
+              onClose();
+            }, 1500);
+          }
+        } else {
+          setWarningMessage('Failed to save contact. Please try again.');
+        }
+      }).catch((error) => {
+        setWarningMessage(error.message || 'Failed to save contact. Please try again.');
+      });
+    } else if (onSave) {
+      // Legacy flow: show success message and close
       setSuccessMessage('Contact saved successfully!');
       // Call onSave to update parent component data
       onSave(contactToSave);
@@ -759,7 +777,7 @@ export default function ContactDetailModal({
               {expandedSections.contactInfo && (
                 <div className="px-4 pb-4 space-y-3">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Name</label>
+                    <label className="block text-sm text-gray-600 mb-1">{type === 'parent' ? 'Parent Contact: Name' : 'Parent-Contact Name'}</label>
                     <input
                       type="text"
                       value={editedContact.name || ''}
@@ -768,6 +786,18 @@ export default function ContactDetailModal({
                       className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
+                  {type !== 'parent' && (
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Sub-Contact Location</label>
+                      <input
+                        type="text"
+                        value={editedContact.location_name || ''}
+                        onChange={(e) => handleInputChange('location_name', e.target.value)}
+                        placeholder="Enter location name"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  )}
                   <div className="grid grid-cols-5 gap-3">
                     <div className="col-span-3">
                       <label className="block text-sm text-gray-600 mb-1">Email</label>
@@ -842,16 +872,6 @@ export default function ContactDetailModal({
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Location Name</label>
-                    <input
-                      type="text"
-                      value={editedContact.location_name || ''}
-                      onChange={(e) => handleInputChange('location_name', e.target.value)}
-                      placeholder="Enter location name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
                   </div>
                 </div>
               )}

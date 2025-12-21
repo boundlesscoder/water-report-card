@@ -4,9 +4,9 @@ const nextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: process.env.NODE_ENV === 'production' 
-                    ? 'https://waterreportcard.com/api/:path*'
-                    : 'http://localhost:2018/api/:path*',
+                // In both dev and production, proxy to localhost backend (they're on the same server)
+                // Remove /api prefix since backend routes don't have /api prefix
+                destination: 'http://localhost:2018/:path*',
             },
         ];
     },
