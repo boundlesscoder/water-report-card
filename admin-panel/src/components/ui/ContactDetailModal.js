@@ -138,6 +138,8 @@ export default function ContactDetailModal({
         email: '',
         phone: '',
         contact_type: '',
+        account_type: '',
+        account_status: '',
         category_description: '',
         location_name: '',
         physical_address: '',
@@ -834,31 +836,60 @@ export default function ContactDetailModal({
                       )}
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Contact Type</label>
-                    <select
-                      value={editedContact.contact_type || ''}
-                      onChange={(e) => handleInputChange('contact_type', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Select Contact Type</option>
-                      {/* Flat types (no hierarchy) */}
-                      {contactTypesFlat.map((type, index) => (
-                        <option key={`flat-${index}`} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                      {/* Hierarchical types with optgroups */}
-                      {contactTypesHierarchical.map((group, groupIndex) => (
-                        <optgroup key={`group-${groupIndex}`} label={group.parent}>
-                          {group.children.map((child, childIndex) => (
-                            <option key={`child-${groupIndex}-${childIndex}`} value={child.value}>
-                              {child.label}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Contact Type</label>
+                      <select
+                        value={editedContact.contact_type || ''}
+                        onChange={(e) => handleInputChange('contact_type', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select Contact Type</option>
+                        {/* Flat types (no hierarchy) */}
+                        {contactTypesFlat.map((type, index) => (
+                          <option key={`flat-${index}`} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                        {/* Hierarchical types with optgroups */}
+                        {contactTypesHierarchical.map((group, groupIndex) => (
+                          <optgroup key={`group-${groupIndex}`} label={group.parent}>
+                            {group.children.map((child, childIndex) => (
+                              <option key={`child-${groupIndex}-${childIndex}`} value={child.value}>
+                                {child.label}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Account Type</label>
+                      <select
+                        value={editedContact.account_type || ''}
+                        onChange={(e) => handleInputChange('account_type', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select Account Type</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Residential">Residential</option>
+                        <option value="Institutional">Institutional</option>
+                        <option value="Non-Profit">Non-Profit</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Account Status</label>
+                      <select
+                        value={editedContact.account_status || ''}
+                        onChange={(e) => handleInputChange('account_status', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select Account Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Prospect">Prospect</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Category</label>

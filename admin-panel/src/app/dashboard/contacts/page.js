@@ -1462,6 +1462,16 @@ export default function ContactManagement() {
                     setModalType(contact.parent_id !== null && contact.parent_id !== undefined ? 'sub' : 'parent');
                     setIsModalOpen(true);
                   }}
+                  onContactEdit={(contact) => {
+                    setSelectedContact(contact);
+                    setModalMode('edit');
+                    setModalType(contact.parent_id !== null && contact.parent_id !== undefined ? 'sub' : 'parent');
+                    setIsModalOpen(true);
+                  }}
+                  onContactDelete={(contact) => {
+                    setContactToDelete(contact);
+                    setShowDeleteContactModal(true);
+                  }}
                 />
               </div>
             ) : (
@@ -1489,7 +1499,19 @@ export default function ContactManagement() {
                       }}
                       onContactDoubleClick={(contact) => {
                         setSelectedContact(contact);
+                        setModalMode('edit');
+                        setModalType(contact.parent_id !== null && contact.parent_id !== undefined ? 'sub' : 'parent');
                         setIsModalOpen(true);
+                      }}
+                      onContactEdit={(contact) => {
+                        setSelectedContact(contact);
+                        setModalMode('edit');
+                        setModalType(contact.parent_id !== null && contact.parent_id !== undefined ? 'sub' : 'parent');
+                        setIsModalOpen(true);
+                      }}
+                      onContactDelete={(contact) => {
+                        setContactToDelete(contact);
+                        setShowDeleteContactModal(true);
                       }}
                     />
                 </div>
@@ -1515,28 +1537,134 @@ export default function ContactManagement() {
           setIsModalOpen(false);
           setSelectedContact(null);
         }}
-        onSave={(updatedContact) => {
-          if (modalMode === 'add') {
-            // Add new contact
-            const newContact = {
-              ...updatedContact,
-              id: `contact-${Date.now()}-${Math.random()}`,
-              // parent_id is already set correctly in ContactDetailModal handleSave
-              parent_id: updatedContact.parent_id !== undefined ? updatedContact.parent_id : (modalType === 'sub' ? null : null)
+        onSave={async (updatedContact) => {
+          try {
+            setLoading(true);
+            setError(null);
+
+            console.log('Frontend - updatedContact before processing:', updatedContact);
+            console.log('Frontend - account_type:', updatedContact.account_type);
+            console.log('Frontend - account_status:', updatedContact.account_status);
+
+            // Prepare contact data for API
+            const accountTypeValue = updatedContact.account_type !== undefined && updatedContact.account_type !== null && updatedContact.account_type.trim() !== '' 
+              ? updatedContact.account_type 
+              : null;
+            const accountStatusValue = updatedContact.account_status !== undefined && updatedContact.account_status !== null && updatedContact.account_status.trim() !== '' 
+              ? updatedContact.account_status 
+              : null;
+            
+            console.log('Frontend - accountTypeValue:', accountTypeValue);
+            console.log('Frontend - accountStatusValue:', accountStatusValue);
+
+            const contactData = {
+              contact_name: updatedContact.name || '',
+              parent_id: updatedContact.parent_id || null,
+              main_phone_number: updatedContact.phone || null,
+              category_description: updatedContact.category_description || null,
+              account_type: accountTypeValue,
+              account_status: accountStatusValue,
+              // Preserve existing location_id and billing_id if they exist
+              location_id: updatedContact.location_id || null,
+              billing_id: updatedContact.billing_id || null,
+              // Location data (will be handled by backend)
+              location_name: updatedContact.location_name || null,
+              physical_address: updatedContact.physical_address || null,
+              city: updatedContact.city || null,
+              state: updatedContact.state || null,
+              zip: updatedContact.zip || null,
+              country: updatedContact.country || 'USA',
+              shipping_address: updatedContact.shipping_address || null,
+              shipping_city: updatedContact.shipping_city || null,
+              shipping_state: updatedContact.shipping_state || null,
+              shipping_zip: updatedContact.shipping_zip || null,
+              shipping_country: updatedContact.shipping_country || 'USA',
+              billing_address: updatedContact.billing_address || null,
+              billing_city: updatedContact.billing_city || null,
+              billing_state: updatedContact.billing_state || null,
+              billing_zip: updatedContact.billing_zip || null,
+              billing_country: updatedContact.billing_country || 'USA',
+              email: updatedContact.email || null,
+              contact_type: updatedContact.contact_type || null,
+              service_zone: updatedContact.service_zone || null,
+              route: updatedContact.route || null,
+              pwsid: updatedContact.pwsid || null,
+              hours_of_operation: updatedContact.hours_of_operation || null,
+              days_of_operation: updatedContact.days_of_operation || null,
+              security_access_instructions: updatedContact.security_access_instructions || null,
+              parking_requirements: updatedContact.parking_requirements || null,
+              point_contact_primary: updatedContact.point_contact_primary || null,
+              point_contact_secondary: updatedContact.point_contact_secondary || null,
+              is_cert_of_insurance_on_file: updatedContact.is_cert_of_insurance_on_file || false,
+              employees: updatedContact.employees || []
             };
-            setAllContacts(prev => [...prev, newContact]);
-          } else {
-            // Update existing contact
-            setAllContacts(prev => 
-              prev.map(contact => 
-                contact.id === updatedContact.id ? updatedContact : contact
-              )
-            );
-            setSelectedContact(updatedContact);
+
+            console.log('Frontend - contactData being sent to API:', JSON.stringify(contactData, null, 2));
+            console.log('Frontend - contactData.account_type:', contactData.account_type, 'type:', typeof contactData.account_type);
+            console.log('Frontend - contactData.account_status:', contactData.account_status, 'type:', typeof contactData.account_status);
+            console.log('Frontend - contactData keys:', Object.keys(contactData));
+            console.log('Frontend - Has account_type key?', 'account_type' in contactData);
+            console.log('Frontend - Has account_status key?', 'account_status' in contactData);
+
+            let savedContact;
+            if (modalMode === 'add') {
+              // Create new contact
+              const response = await api.post('/api/contacts', contactData);
+              console.log('Frontend - Create response:', response.data);
+              if (response.data?.success) {
+                savedContact = response.data.data;
+                setAllContacts(prev => [...prev, savedContact]);
+              } else {
+                throw new Error(response.data?.message || 'Failed to create contact');
+              }
+            } else {
+              // Update existing contact
+              console.log('Frontend - Sending PUT request to:', `/api/contacts/${updatedContact.id}`);
+              const response = await api.put(`/api/contacts/${updatedContact.id}`, contactData);
+              console.log('Frontend - Update response:', response.data);
+              console.log('Frontend - Update response data.account_type:', response.data?.data?.account_type);
+              console.log('Frontend - Update response data.account_status:', response.data?.data?.account_status);
+              console.log('Frontend - Update response debug info:', response.data?.debug);
+              if (response.data?.success) {
+                savedContact = response.data.data;
+                console.log('Frontend - savedContact.account_type:', savedContact.account_type);
+                console.log('Frontend - savedContact.account_status:', savedContact.account_status);
+                
+                // Check debug info if available
+                if (response.data.debug) {
+                  console.log('Frontend - DEBUG: Received account_type:', response.data.debug.received_account_type);
+                  console.log('Frontend - DEBUG: Saved account_type:', response.data.debug.saved_account_type);
+                  console.log('Frontend - DEBUG: Received account_status:', response.data.debug.received_account_status);
+                  console.log('Frontend - DEBUG: Saved account_status:', response.data.debug.saved_account_status);
+                  
+                  if (response.data.debug.received_account_type !== response.data.debug.saved_account_type) {
+                    console.error('Frontend - ERROR: account_type mismatch! Received:', response.data.debug.received_account_type, 'but saved:', response.data.debug.saved_account_type);
+                  }
+                  if (response.data.debug.received_account_status !== response.data.debug.saved_account_status) {
+                    console.error('Frontend - ERROR: account_status mismatch! Received:', response.data.debug.received_account_status, 'but saved:', response.data.debug.saved_account_status);
+                  }
+                }
+                setAllContacts(prev => 
+                  prev.map(contact => 
+                    contact.id === savedContact.id ? savedContact : contact
+                  )
+                );
+                setSelectedContact(savedContact);
+              } else {
+                throw new Error(response.data?.message || 'Failed to update contact');
+              }
+            }
+
+            // Refresh the contact list to get the latest data
+            await fetchContacts();
+          } catch (err) {
+            console.error('Error saving contact:', err);
+            setError(err.response?.data?.message || err.message || 'Failed to save contact');
+            // Don't close modal on error - let user see the error and try again
+            return;
+          } finally {
+            setLoading(false);
           }
-          // Refresh filtered contacts by updating state
-          // The processedData will automatically update based on allContacts
-          // Modal will handle closing itself after showing success message
         }}
         onEditSubContact={(subContact) => {
           setSelectedContact(subContact);

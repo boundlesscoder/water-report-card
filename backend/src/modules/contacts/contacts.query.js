@@ -9,6 +9,8 @@ export const CONTACT_QUERIES = {
       c.parent_id,
       c.main_phone_number as phone,
       c.category_description,
+      c.account_type,
+      c.account_status,
       -- Location fields
       l.id as location_id,
       l.name as location_name,
@@ -59,6 +61,8 @@ export const CONTACT_QUERIES = {
       c.parent_id,
       c.main_phone_number as phone,
       c.category_description,
+      c.account_type,
+      c.account_status,
       -- Location fields
       l.id as location_id,
       l.name as location_name,
@@ -108,9 +112,9 @@ export const CONTACT_QUERIES = {
       status, referral, lead_source, external_url,
       security_access_instructions, parking_requirements,
       main_phone_number, point_contact_primary, point_contact_secondary,
-      is_cert_of_insurance_on_file
+      is_cert_of_insurance_on_file, account_type, account_status
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
     ) RETURNING *
   `,
   
@@ -132,6 +136,8 @@ export const CONTACT_QUERIES = {
       point_contact_primary = $14,
       point_contact_secondary = $15,
       is_cert_of_insurance_on_file = COALESCE($16, is_cert_of_insurance_on_file),
+      account_type = $17,
+      account_status = $18,
       updated_at = now()
     WHERE id = $1
     RETURNING *

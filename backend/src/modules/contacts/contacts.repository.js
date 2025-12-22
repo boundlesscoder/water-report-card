@@ -86,7 +86,9 @@ export async function createContactRepository(data) {
     main_phone_number,
     point_contact_primary,
     point_contact_secondary,
-    is_cert_of_insurance_on_file = false
+    is_cert_of_insurance_on_file = false,
+    account_type,
+    account_status
   } = data;
 
   const result = await db.query(CONTACT_QUERIES.CREATE_CONTACT, [
@@ -104,7 +106,9 @@ export async function createContactRepository(data) {
     main_phone_number || null,
     point_contact_primary || null,
     point_contact_secondary || null,
-    is_cert_of_insurance_on_file
+    is_cert_of_insurance_on_file,
+    account_type || null,
+    account_status || null
   ]);
 
   return result.rows[0];
@@ -126,7 +130,9 @@ export async function updateContactRepository(id, data) {
     main_phone_number,
     point_contact_primary,
     point_contact_secondary,
-    is_cert_of_insurance_on_file
+    is_cert_of_insurance_on_file,
+    account_type,
+    account_status
   } = data;
 
   const result = await db.query(CONTACT_QUERIES.UPDATE_CONTACT, [
@@ -145,7 +151,9 @@ export async function updateContactRepository(id, data) {
     main_phone_number,
     point_contact_primary,
     point_contact_secondary,
-    is_cert_of_insurance_on_file
+    is_cert_of_insurance_on_file,
+    account_type,
+    account_status
   ]);
 
   return result.rows[0] || null;
