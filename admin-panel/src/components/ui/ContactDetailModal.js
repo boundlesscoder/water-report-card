@@ -138,6 +138,7 @@ export default function ContactDetailModal({
         email: '',
         phone: '',
         contact_type: '',
+        contact_status: '',
         account_type: '',
         account_status: '',
         category_description: '',
@@ -170,41 +171,57 @@ export default function ContactDetailModal({
       setSameAsParentShippingAddress(false);
       setSameAsParentBillingAddress(false);
     } else if (contact) {
-      // Ensure all address fields are properly initialized
-      setEditedContact({
+      // Ensure all fields are properly initialized from contact data
+      // Start with contact data, then override with explicit defaults for select inputs and missing fields
+      const initializedContact = {
         ...contact,
+        // Ensure account_type, account_status, and contact_status are explicitly set (convert null to empty string for select inputs)
+        // Normalize values to lowercase to match select option values
+        account_type: contact.account_type && String(contact.account_type).trim() !== '' 
+          ? String(contact.account_type).toLowerCase().trim() 
+          : '',
+        account_status: contact.account_status && String(contact.account_status).trim() !== '' 
+          ? String(contact.account_status).toLowerCase().trim() 
+          : '',
+        contact_status: (contact.contact_status || contact.status) && String(contact.contact_status || contact.status).trim() !== ''
+          ? String(contact.contact_status || contact.status).toLowerCase().trim() 
+          : '',
+        // Ensure name field (handle both name and contact_name)
+        name: contact.name || contact.contact_name || '',
+        // Ensure phone field (handle both phone and main_phone_number)
+        phone: contact.phone || contact.main_phone_number || '',
         // Ensure shipping address fields exist
+        shipping_address: contact.shipping_address || '',
         shipping_city: contact.shipping_city || '',
         shipping_state: contact.shipping_state || '',
         shipping_zip: contact.shipping_zip || '',
-        shipping_country: contact.shipping_country || '',
+        shipping_country: contact.shipping_country || contact.country || 'USA',
         // Ensure billing address fields exist
+        billing_address: contact.billing_address || '',
         billing_city: contact.billing_city || '',
         billing_state: contact.billing_state || '',
         billing_zip: contact.billing_zip || '',
-        billing_country: contact.billing_country || ''
-      });
-      // Parse hours and days if they exist
-      if (contact.hours_of_operation) {
-        const hoursMatch = contact.hours_of_operation.match(/(\d{1,2}:\d{2}\s*(?:AM|PM))\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM))/i);
-        if (hoursMatch) {
-          setEditedContact(prev => ({
-            ...prev,
-            hours_of_operation_start: hoursMatch[1],
-            hours_of_operation_end: hoursMatch[2]
-          }));
-        }
-      }
-      if (contact.days_of_operation) {
-        const daysMatch = contact.days_of_operation.match(/(\w+day)\s*-\s*(\w+day)/i);
-        if (daysMatch) {
-          setEditedContact(prev => ({
-            ...prev,
-            days_of_operation_start: daysMatch[1],
-            days_of_operation_end: daysMatch[2]
-          }));
-        }
-      }
+        billing_country: contact.billing_country || contact.country || 'USA',
+        // Ensure location address fields
+        physical_address: contact.physical_address || contact.location_address || '',
+        city: contact.city || '',
+        state: contact.state || '',
+        zip: contact.zip || contact.postal_code || '',
+        country: contact.country || 'USA',
+        // Ensure other optional fields have defaults
+        location_name: contact.location_name || '',
+        service_zone: contact.service_zone || '',
+        route: contact.route || '',
+        pwsid: contact.pwsid || contact.water_district || '',
+        main_phone_number: contact.main_phone_number || contact.phone || '',
+        security_access_instructions: contact.security_access_instructions || '',
+        parking_requirements: contact.parking_requirements || '',
+        point_contact_primary: contact.point_contact_primary || '',
+        point_contact_secondary: contact.point_contact_secondary || '',
+        is_cert_of_insurance_on_file: contact.is_cert_of_insurance_on_file || false
+      };
+      
+      setEditedContact(initializedContact);
       // Initialize employees if they exist
       if (contact.employees && Array.isArray(contact.employees)) {
         setEmployees(contact.employees);
@@ -453,16 +470,9 @@ export default function ContactDetailModal({
     // Set parent_id correctly: null for parent contacts, use modal data for sub-contacts
     const parentId = type === 'parent' ? null : (editedContact.parent_id || null);
     
-    // Combine hours and days of operation
     const contactToSave = {
       ...editedContact,
       parent_id: parentId,
-      hours_of_operation: editedContact.hours_of_operation_start && editedContact.hours_of_operation_end
-        ? `${editedContact.hours_of_operation_start} - ${editedContact.hours_of_operation_end}`
-        : '',
-      days_of_operation: editedContact.days_of_operation_start && editedContact.days_of_operation_end
-        ? `${editedContact.days_of_operation_start} - ${editedContact.days_of_operation_end}`
-        : '',
       employees: employees
     };
     
@@ -470,12 +480,9 @@ export default function ContactDetailModal({
       // Use onSaveRequest if provided (for parent contact confirmation flow)
       onSaveRequest(contactToSave).then(({shouldClose, success}) => {
         if (success) {
-          setSuccessMessage('Contact saved successfully!');
+          // Parent will handle toast notification
           if (shouldClose) {
-            setTimeout(() => {
-              setSuccessMessage('');
-              onClose();
-            }, 1500);
+            onClose();
           }
         } else {
           setWarningMessage('Failed to save contact. Please try again.');
@@ -484,15 +491,10 @@ export default function ContactDetailModal({
         setWarningMessage(error.message || 'Failed to save contact. Please try again.');
       });
     } else if (onSave) {
-      // Legacy flow: show success message and close
-      setSuccessMessage('Contact saved successfully!');
-      // Call onSave to update parent component data
+      // Clear any warning messages before saving
+      setWarningMessage('');
+      // Call onSave - parent will handle toast notification and modal closing
       onSave(contactToSave);
-      // Close modal after a short delay to show success message
-      setTimeout(() => {
-        setSuccessMessage('');
-        onClose();
-      }, 1500);
     }
   };
 
@@ -640,15 +642,7 @@ export default function ContactDetailModal({
             </div>
           )}
 
-          {/* Success Message */}
-          {successMessage && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md flex items-start gap-3">
-              <CheckCircleIcon className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-green-800">{successMessage}</p>
-              </div>
-            </div>
-          )}
+          {/* Success messages are now shown as toast notifications, not in the modal */}
 
           {/* Parent Contact Selector (for sub-contacts) */}
           {type === 'sub' && (
@@ -718,10 +712,6 @@ export default function ContactDetailModal({
                                   billing_state: row.billing_state || row.state || '',
                                   billing_zip: row.billing_zip || row.zip || '',
                                   billing_country: row.billing_country || row.country || 'USA',
-                                  hours_of_operation_start: row.hours_of_operation_start || '',
-                                  hours_of_operation_end: row.hours_of_operation_end || '',
-                                  days_of_operation_start: row.days_of_operation_start || '',
-                                  days_of_operation_end: row.days_of_operation_end || '',
                                   service_zone: row.service_zone || '',
                                   route: row.route || '',
                                   pwsid: row.pwsid || row.water_district || ''
@@ -836,7 +826,7 @@ export default function ContactDetailModal({
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-4 gap-3">
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Contact Type</label>
                       <select
@@ -864,6 +854,18 @@ export default function ContactDetailModal({
                       </select>
                     </div>
                     <div>
+                      <label className="block text-sm text-gray-600 mb-1">Contact Status</label>
+                      <select
+                        value={editedContact.contact_status || ''}
+                        onChange={(e) => handleInputChange('contact_status', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select Contact Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+                    <div>
                       <label className="block text-sm text-gray-600 mb-1">Account Type</label>
                       <select
                         value={editedContact.account_type || ''}
@@ -871,10 +873,10 @@ export default function ContactDetailModal({
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Select Account Type</option>
-                        <option value="Commercial">Commercial</option>
-                        <option value="Residential">Residential</option>
-                        <option value="Institutional">Institutional</option>
-                        <option value="Non-Profit">Non-Profit</option>
+                        <option value="commercial">Commercial</option>
+                        <option value="residential">Residential</option>
+                        <option value="institutional">Institutional</option>
+                        <option value="non-profit">Non-Profit</option>
                       </select>
                     </div>
                     <div>
@@ -885,9 +887,9 @@ export default function ContactDetailModal({
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Select Account Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Prospect">Prospect</option>
-                        <option value="Inactive">Inactive</option>
+                        <option value="active">Active</option>
+                        <option value="prospect">Prospect</option>
+                        <option value="inactive">Inactive</option>
                       </select>
                     </div>
                   </div>

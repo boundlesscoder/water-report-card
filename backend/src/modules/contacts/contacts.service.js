@@ -106,10 +106,16 @@ export async function createContactService(data) {
   }
 
   // Create contact with location_id and billing_id
+  // Process status - default to 'active' if not provided
+  const processedStatus = (data.status !== undefined && data.status !== null && String(data.status).trim() !== '') 
+    ? String(data.status).trim() 
+    : 'active';
+  
   const contactData = {
     ...data,
     location_id: locationId,
     billing_id: billingId,
+    status: processedStatus,
     account_type: data.account_type && data.account_type.trim() !== '' ? data.account_type : null,
     account_status: data.account_status && data.account_status.trim() !== '' ? data.account_status : null
   };
@@ -317,21 +323,48 @@ export async function updateContactService(id, data) {
     }
   }
   
-  // Create contactData with account_type and account_status explicitly set
+  // Process account_type, account_status, and status - convert empty strings to null, preserve null/undefined
+  const processedAccountType = (data.account_type !== undefined && data.account_type !== null && String(data.account_type).trim() !== '') 
+    ? String(data.account_type).trim() 
+    : null;
+  
+  const processedAccountStatus = (data.account_status !== undefined && data.account_status !== null && String(data.account_status).trim() !== '') 
+    ? String(data.account_status).trim() 
+    : null;
+  
+  // Process status field - convert empty strings to null, preserve null if explicitly set, undefined if not provided
+  // If status is provided (even as empty string), process it; if undefined, don't include it
+  const processedStatus = data.status !== undefined 
+    ? ((data.status !== null && String(data.status).trim() !== '') ? String(data.status).trim() : null)
+    : undefined;
+  
+  // Remove account_type, account_status, and status from spread to avoid conflicts, then add them explicitly
+  const { account_type: _, account_status: __, status: ___, ...dataWithoutFields } = data;
+  
+  // Create contactData with account_type, account_status, and status explicitly set
   const contactData = {
-    ...data,
+    ...dataWithoutFields,
     location_id: locationId,
     billing_id: billingId,
-    account_type: data.account_type,
-    account_status: data.account_status
+    account_type: processedAccountType,
+    account_status: processedAccountStatus
   };
+  
+  // Only include status if it was provided (not undefined)
+  if (processedStatus !== undefined) {
+    contactData.status = processedStatus;
+  }
 
   const contact = await repository.updateContactRepository(id, contactData);
   
   if (!contact) {
     throw new Error('Contact not found');
   }
-  return contact;
+  
+  // Fetch the full contact with all joined data to return to frontend
+  // This ensures account_type and account_status are included from the database
+  const fullContact = await repository.getContactByIdRepository(id);
+  return fullContact || contact;
 }
 
 export async function deleteContactService(id) {

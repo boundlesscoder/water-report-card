@@ -36,7 +36,7 @@ export const COMPLETE_SCHEMA_MAPPING = {
   locations: {
     fields: [
       'id', 'account_id', 'branch', 'location_type', 'route_code', 'region', 
-      'address_id', 'phone', 'hours_of_operation', 'days_of_operation', 
+      'address_id', 'phone', 
       'status', 'created_at', 'updated_at',
       // Added in migration 7
       'geom',
@@ -694,8 +694,6 @@ export const FIELD_DISPLAY_NAMES = {
   // Location fields
   'location_type': 'Location Type',
   'route_code': 'Route Code',
-  'hours_of_operation': 'Operating Hours',
-  'days_of_operation': 'Operating Days',
   'cached_city': 'City',
   'cached_state': 'State',
   'cached_postal_code': 'ZIP Code',

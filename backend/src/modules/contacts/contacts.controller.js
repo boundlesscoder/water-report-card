@@ -60,6 +60,7 @@ export async function createContact(req, res) {
 export async function updateContact(req, res) {
   try {
     const { id } = req.params;
+    console.log('req.body', req.body);
     const contact = await service.updateContactService(id, req.body);
     
     if (!contact) {

@@ -135,6 +135,11 @@ export async function updateContactRepository(id, data) {
     account_status
   } = data;
 
+  // Ensure account_type and account_status are explicitly set (not undefined)
+  // If they're undefined, use null so PostgreSQL can handle it
+  const finalAccountType = account_type !== undefined ? account_type : null;
+  const finalAccountStatus = account_status !== undefined ? account_status : null;
+
   const result = await db.query(CONTACT_QUERIES.UPDATE_CONTACT, [
     id,
     contact_id,
@@ -152,8 +157,8 @@ export async function updateContactRepository(id, data) {
     point_contact_primary,
     point_contact_secondary,
     is_cert_of_insurance_on_file,
-    account_type,
-    account_status
+    finalAccountType,
+    finalAccountStatus
   ]);
 
   return result.rows[0] || null;
@@ -587,6 +592,15 @@ export async function createAddressRepository(data) {
     pwsid
   } = data;
 
+  // Ensure latitude and longitude are explicitly null if undefined/empty, and convert to number if valid
+  // This prevents PostgreSQL type inference issues (double precision vs numeric)
+  const finalLatitude = (latitude !== undefined && latitude !== null && latitude !== '') 
+    ? (typeof latitude === 'number' ? latitude : (isNaN(parseFloat(latitude)) ? null : parseFloat(latitude)))
+    : null;
+  const finalLongitude = (longitude !== undefined && longitude !== null && longitude !== '') 
+    ? (typeof longitude === 'number' ? longitude : (isNaN(parseFloat(longitude)) ? null : parseFloat(longitude)))
+    : null;
+
   const result = await db.query(CONTACT_QUERIES.CREATE_ADDRESS, [
     line1 || null,
     line2 || null,
@@ -594,8 +608,8 @@ export async function createAddressRepository(data) {
     state || null,
     postal_code || null,
     country || null,
-    latitude || null,
-    longitude || null,
+    finalLatitude,
+    finalLongitude,
     pwsid || null
   ]);
 
@@ -615,6 +629,15 @@ export async function updateAddressRepository(id, data) {
     pwsid
   } = data;
 
+  // Ensure latitude and longitude are explicitly null if undefined to avoid PostgreSQL type inference issues
+  // Convert to number if it's a valid number string, otherwise use null
+  const finalLatitude = (latitude !== undefined && latitude !== null && latitude !== '') 
+    ? (typeof latitude === 'number' ? latitude : (isNaN(parseFloat(latitude)) ? null : parseFloat(latitude)))
+    : null;
+  const finalLongitude = (longitude !== undefined && longitude !== null && longitude !== '') 
+    ? (typeof longitude === 'number' ? longitude : (isNaN(parseFloat(longitude)) ? null : parseFloat(longitude)))
+    : null;
+
   const result = await db.query(CONTACT_QUERIES.UPDATE_ADDRESS, [
     id,
     line1,
@@ -623,8 +646,8 @@ export async function updateAddressRepository(id, data) {
     state,
     postal_code,
     country,
-    latitude,
-    longitude,
+    finalLatitude,
+    finalLongitude,
     pwsid
   ]);
 

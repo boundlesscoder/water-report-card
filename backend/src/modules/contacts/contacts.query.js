@@ -11,6 +11,7 @@ export const CONTACT_QUERIES = {
       c.category_description,
       c.account_type,
       c.account_status,
+      c.status,
       -- Location fields
       l.id as location_id,
       l.name as location_name,
@@ -34,7 +35,7 @@ export const CONTACT_QUERIES = {
       b.id as billing_id,
       b.email,
       b.contact_type,
-      COALESCE(l.status, 'active') as contact_status,
+      c.status as contact_status,
       -- Billing address (from billing_information.address_id)
       a_billing.line1 as billing_address,
       a_billing.city as billing_city,
@@ -63,6 +64,7 @@ export const CONTACT_QUERIES = {
       c.category_description,
       c.account_type,
       c.account_status,
+      c.status,
       -- Location fields
       l.id as location_id,
       l.name as location_name,
@@ -86,7 +88,7 @@ export const CONTACT_QUERIES = {
       b.id as billing_id,
       b.email,
       b.contact_type,
-      COALESCE(l.status, 'active') as contact_status,
+      c.status as contact_status,
       -- Billing address (from billing_information.address_id)
       a_billing.line1 as billing_address,
       a_billing.city as billing_city,
@@ -121,26 +123,26 @@ export const CONTACT_QUERIES = {
   UPDATE_CONTACT: `
     UPDATE public.wrc_contacts
     SET 
-      contact_id = COALESCE($2, contact_id),
-      contact_name = COALESCE($3, contact_name),
-      parent_id = $4,
-      location_id = $5,
-      billing_id = $6,
-      status = COALESCE($7, status),
-      referral = $8,
-      lead_source = $9,
-      external_url = $10,
-      security_access_instructions = $11,
-      parking_requirements = $12,
-      main_phone_number = $13,
-      point_contact_primary = $14,
-      point_contact_secondary = $15,
-      is_cert_of_insurance_on_file = COALESCE($16, is_cert_of_insurance_on_file),
-      account_type = $17,
-      account_status = $18,
+      contact_id = COALESCE($2::varchar, contact_id),
+      contact_name = COALESCE($3::varchar, contact_name),
+      parent_id = $4::uuid,
+      location_id = $5::uuid,
+      billing_id = $6::uuid,
+      status = COALESCE($7::varchar, status),
+      referral = COALESCE($8::varchar, referral),
+      lead_source = COALESCE($9::varchar, lead_source),
+      external_url = COALESCE($10::varchar, external_url),
+      security_access_instructions = COALESCE($11::varchar, security_access_instructions),
+      parking_requirements = COALESCE($12::varchar, parking_requirements),
+      main_phone_number = COALESCE($13::varchar, main_phone_number),
+      point_contact_primary = COALESCE($14::varchar, point_contact_primary),
+      point_contact_secondary = COALESCE($15::varchar, point_contact_secondary),
+      is_cert_of_insurance_on_file = COALESCE($16::boolean, is_cert_of_insurance_on_file),
+      account_type = COALESCE($17::varchar, account_type),
+      account_status = COALESCE($18::varchar, account_status),
       updated_at = now()
-    WHERE id = $1
-    RETURNING *
+    WHERE id = $1::uuid
+    RETURNING *;
   `,
   
   DELETE_CONTACT: `
@@ -244,9 +246,9 @@ export const CONTACT_QUERIES = {
       line1, line2, city, state, postal_code, country,
       latitude, longitude, pwsid, geom
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9,
+      $1, $2, $3, $4, $5, $6, $7::double precision, $8::double precision, $9,
       CASE WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
-        THEN ST_SetSRID(ST_MakePoint($8, $7), 4326)::geography
+        THEN ST_SetSRID(ST_MakePoint($8::double precision, $7::double precision), 4326)::geography
         ELSE NULL
       END
     ) RETURNING *
@@ -261,11 +263,11 @@ export const CONTACT_QUERIES = {
       state = COALESCE($5, state),
       postal_code = COALESCE($6, postal_code),
       country = COALESCE($7, country),
-      latitude = $8,
-      longitude = $9,
+      latitude = $8::double precision,
+      longitude = $9::double precision,
       pwsid = $10,
       geom = CASE WHEN $8 IS NOT NULL AND $9 IS NOT NULL 
-        THEN ST_SetSRID(ST_MakePoint($9, $8), 4326)::geography
+        THEN ST_SetSRID(ST_MakePoint($9::double precision, $8::double precision), 4326)::geography
         ELSE geom
       END,
       updated_at = now()

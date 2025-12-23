@@ -339,22 +339,10 @@ export default function SearchableDataTable({
           </div>
         </div>
         
-        {(contact.hours_of_operation || contact.days_of_operation || contact.service_zone || contact.route) && (
+        {(contact.service_zone || contact.route) && (
           <div className="mt-4 pt-4 border-t border-gray-200">
             <h4 className="font-semibold text-gray-700 mb-3">Additional Information</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
-              {contact.hours_of_operation && (
-                <div>
-                  <span className="text-gray-600">Hours:</span>
-                  <span className="text-gray-900 ml-2">{contact.hours_of_operation}</span>
-                </div>
-              )}
-              {contact.days_of_operation && (
-                <div>
-                  <span className="text-gray-600">Days:</span>
-                  <span className="text-gray-900 ml-2">{contact.days_of_operation}</span>
-                </div>
-              )}
               {contact.service_zone && (
                 <div>
                   <span className="text-gray-600">Service Zone:</span>
